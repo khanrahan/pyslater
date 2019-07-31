@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Generates .ttg files for Autodesk Flame using a CSV file for entries.
+Generates .ttg files for Autodesk Flame using data from a CSV file.
 """
 
 import argparse
@@ -73,29 +73,17 @@ def main():
                         help="""replace spaces and illegal characters in output filenames""")
     args = parser.parse_args()
 
-    print "the csv file is ..."
-    print args.csv_file #print for debugging
-    print "the ttg file is ..."
-    print args.ttg_template #print for debugging
-
-    # Gather keywords
+    # Gather keywords in TTG file
     ttg_file_list = read_ttg_file(args.ttg_template)
-    print ttg_file_list #print for debugging
     ttg_keywords = find_ttg_keywords(ttg_file_list)
-    print ttg_keywords # print for debugging
-    #keywords = [(index, convert_from_ttg_text(raw_string)) for index,
-    #        raw_string in ttg_keywords)]
 
     unicode_keywords = {index: convert_from_ttg_text(raw_string) for index,
                         raw_string in ttg_keywords.items()}
-    print unicode_keywords #print for debugging
     print "Found %s keywords in the TTG template:" % len(unicode_keywords)
-    print ", ".join([keyword for line_number, keyword in unicode_keywords.iteritems()]) #print out keywords
+    print ", ".join([keyword for line_number, keyword in unicode_keywords.iteritems()])
 
     # Sort out csv
     csv_rows = read_unicode_csv_file(args.csv_file)
-    print csv_rows
-    print '\n'.join(str(i) for i in csv_rows) #print for debugging
 
     # Start writing out ttgs
     print "Found %s rows in the CSV file." % len(csv_rows)
@@ -107,25 +95,22 @@ def main():
         # Assemble dict of keywords and entries for the replacements
         line_replacements = {keyword: entry for keyword, entry in
                              zip(csv_rows[0], csv_rows[1:][i])}
-        print line_replacements
 
         with open(".".join([filename, "ttg"]), "w") as f:
             for line_number, text in enumerate(ttg_file_list, 1):
                 if line_number + 1 in unicode_keywords.keys():
                     new_text = line_replacements[unicode_keywords[line_number
-                        + 1]]
+                                                                  + 1]]
                     f.write("TextLength " +
                             str(len(convert_to_ttg_text(new_text).split())) +
                             "\n")
-                    # debug print " ".join([str(line_number),
-                    #    str(len(convert_to_ttg_text(new_text).split()))])
                 elif line_number in unicode_keywords.keys():
                     new_text = line_replacements[unicode_keywords[line_number]]
                     f.write("Text " + convert_to_ttg_text(new_text) + "\n")
-                    # print " ".join([str(line_number), new_text]) 
                 else:
                     f.write(text + "\n")
-                    # debug print " ".join([str(line_number), "skip"])
-                    
+    
+    print "Done!"
+
 if __name__ == "__main__":
     main()
