@@ -1,20 +1,25 @@
 #!/usr/bin/env python
 
 """
-Docstring to come.
+Generates .ttg files for Autodesk Flame using a CSV file for entries.
 """
 
 import argparse
 import csv
+import re
 
-def read_csv_file(filename):
+def read_unicode_csv_file(filename):
     """Returns a tuple of list data from a csv file passed to it.
     Prints any exceptions from reading the file."""
 
     try:
         with open(filename, 'rU') as open_file:
-            rows = csv.reader(open_file)
-            return tuple(rows)
+            raw_rows = csv.reader(open_file)
+            unicode_rows = []
+            for utf8_row in raw_rows:
+                unicode_row = [x.decode('utf8') for x in utf8_row]
+                unicode_rows.append(unicode_row)
+            return tuple(unicode_rows)
     except Exception as ex:
         print ex
 
@@ -32,8 +37,8 @@ def find_ttg_keywords(ttg_file_list):
     """Returns a list with tuples containing the line number and contents for
     the keywords that are wrapped in percent symbols."""
 
-    return [(i, j) for (i, j) in enumerate(ttg_file_list) if
-            j.startswith('Text 37') and j.endswith('37')]
+    return {line:text for line, text in enumerate(ttg_file_list, 1) if
+            text.startswith('Text 37') and text.endswith('37')}
 
 def convert_from_ttg_text(decimal_string):
     """Returns unicode standard string minus the "Text" at the beginning
@@ -41,10 +46,21 @@ def convert_from_ttg_text(decimal_string):
 
     return "".join(unichr(int(character)) for character in decimal_string.split()[2:-1])
 
-def tidy_text():
-    """docstring"""
+def convert_to_ttg_text(string):
+    """Returns TTG style string"""
 
-    pass
+    return " ".join(str(ord(character)) for character in list(string))
+
+def tidy_text(text):
+    """Returns string that is appropriate for filename usage."""
+    # Delete first and last character if a symbol or space.
+    chopped = re.sub(r"^[\W_]+|[\W_]+$", "", text)
+    # Convert symbols & whitespace to underscores.
+    sanitized = re.sub(r"\W+", "_", chopped)
+    # Remove duplicate underscores.
+    tidy = re.sub(r"(_)\1+", "_", sanitized)
+
+    return tidy
 
 def main():
     """Docstring to be."""
@@ -57,28 +73,59 @@ def main():
                         help="""replace spaces and illegal characters in output filenames""")
     args = parser.parse_args()
 
-    print args.csv_file
-    print args.ttg_template
+    print "the csv file is ..."
+    print args.csv_file #print for debugging
+    print "the ttg file is ..."
+    print args.ttg_template #print for debugging
 
-    #gather keywords
+    # Gather keywords
     ttg_file_list = read_ttg_file(args.ttg_template)
+    print ttg_file_list #print for debugging
     ttg_keywords = find_ttg_keywords(ttg_file_list)
-    keywords = [(index, convert_from_ttg_text(raw_string)) for index, raw_string in ttg_keywords]
+    print ttg_keywords # print for debugging
+    #keywords = [(index, convert_from_ttg_text(raw_string)) for index,
+    #        raw_string in ttg_keywords)]
 
-    #sort out csv
-    rows = read_csv_file(args.csv_file)
-    print '\n'.join(str(i) for i in rows)
+    unicode_keywords = {index: convert_from_ttg_text(raw_string) for index,
+                        raw_string in ttg_keywords.items()}
+    print unicode_keywords #print for debugging
+    print "Found %s keywords in the TTG template:" % len(unicode_keywords)
+    print ", ".join([keyword for line_number, keyword in unicode_keywords.iteritems()]) #print out keywords
 
-    #start writing out ttgs
-    for i, line in enumerate(rows):
-        #skip header rowd
-        if i == 0:
-            pass
-        else:
-            #later add a filename formatting function
-            filename = "_".join([spot_name, duration, tidy_text(title)])
-            with open(filename, 'a') as the_file:
-                the_file.write(line)
+    # Sort out csv
+    csv_rows = read_unicode_csv_file(args.csv_file)
+    print csv_rows
+    print '\n'.join(str(i) for i in csv_rows) #print for debugging
 
+    # Start writing out ttgs
+    print "Found %s rows in the CSV file." % len(csv_rows)
+    for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
+        filename = "_".join([tidy_text(row[5]), tidy_text(row[6]),
+                             tidy_text(row[4])])
+        print "".join(["Writing out ", filename, ".ttg"])
+
+        # Assemble dict of keywords and entries for the replacements
+        line_replacements = {keyword: entry for keyword, entry in
+                             zip(csv_rows[0], csv_rows[1:][i])}
+        print line_replacements
+
+        with open(".".join([filename, "ttg"]), "w") as f:
+            for line_number, text in enumerate(ttg_file_list, 1):
+                if line_number + 1 in unicode_keywords.keys():
+                    new_text = line_replacements[unicode_keywords[line_number
+                        + 1]]
+                    f.write("TextLength " +
+                            str(len(convert_to_ttg_text(new_text).split())) +
+                            "\n")
+                    # debug print " ".join([str(line_number),
+                    #    str(len(convert_to_ttg_text(new_text).split()))])
+                elif line_number in unicode_keywords.keys():
+                    new_text = line_replacements[unicode_keywords[line_number]]
+                    f.write("Text " + convert_to_ttg_text(new_text) + "\n")
+                    # print " ".join([str(line_number), new_text]) 
+                else:
+                    f.write(text + "\n")
+                    # debug print " ".join([str(line_number), "skip"])
+                    
 if __name__ == "__main__":
     main()
