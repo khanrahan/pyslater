@@ -13,7 +13,7 @@ def read_unicode_csv_file(filename):
     Prints any exceptions from reading the file."""
 
     try:
-        with open(filename, 'rU') as open_file:
+        with open(filename, 'rU') as open_file: #remove the U. use newline=
             raw_rows = csv.reader(open_file)
             unicode_rows = []
             for utf8_row in raw_rows:
@@ -87,9 +87,11 @@ def main():
 
     # Start writing out ttgs
     print "Found %s rows in the CSV file." % len(csv_rows)
+    ttg_filenames = []
     for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
         filename = "_".join([tidy_text(row[5]), tidy_text(row[6]),
                              tidy_text(row[4])])
+        ttg_filenames.append(filename)
         print "".join(["Writing out ", filename, ".ttg"])
 
         # Assemble dict of keywords and entries for the replacements
@@ -109,7 +111,25 @@ def main():
                     f.write("Text " + convert_to_ttg_text(new_text) + "\n")
                 else:
                     f.write(text + "\n")
-    
+        
+    # Create HTML Copy Paster Document
+    html_template = "template.html"
+    new_html_filename = "master_names.html"
+    html_line = """  <button
+    data-clipboard-text=\"master_name_goes_here\">master_name_goes_here</button>"""
+
+    with open(html_template, 'rU') as source_file:
+        with open(new_html_filename, 'w') as destination_file:
+            for line_number, line in enumerate(source_file, 1):
+                    if line_number == 40:
+                        for entry in ttg_filenames:
+                            destination_file.write(html_line.replace("master_name_goes_here",
+                                entry) + "\n")
+                            # destination_file.write("taco" + "\n")
+                    else:
+                        destination_file.write(line)
+    print "".join(["Writing out ", new_html_filename])
+
     print "Done!"
 
 if __name__ == "__main__":
