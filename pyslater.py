@@ -62,8 +62,23 @@ def tidy_text(text):
 
     return tidy
 
+def generate_html_page(html_template, new_html_filename,
+        line_number_to_replace, list_of_replacements):
+    html_line = """  <button
+    data-clipboard-text=\"master_name_goes_here\">master_name_goes_here</button>"""
+
+    with open(html_template, 'rU') as source_file:
+        with open(new_html_filename, 'w') as destination_file:
+            for line_number, line in enumerate(source_file, 1):
+                    if line_number == line_number_to_replace:
+                        for entry in list_of_replacements:
+                            destination_file.write(html_line.replace("master_name_goes_here",
+                                entry) + "\n")
+                    else:
+                        destination_file.write(line)
+
 def main():
-    """Docstring to be."""
+    """Script that is run when called from the command line."""
 
     parser = argparse.ArgumentParser(description="""generates .ttg files using a
         template TTG file and CSV full of data to fill in fields""")
@@ -87,11 +102,11 @@ def main():
 
     # Start writing out ttgs
     print "Found %s rows in the CSV file." % len(csv_rows)
-    ttg_filenames = []
+    TTG_FILENAMES = []
     for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
         filename = "_".join([tidy_text(row[5]), tidy_text(row[6]),
                              tidy_text(row[4])])
-        ttg_filenames.append(filename)
+        TTG_FILENAMES.append(filename)
         print "".join(["Writing out ", filename, ".ttg"])
 
         # Assemble dict of keywords and entries for the replacements
@@ -112,23 +127,8 @@ def main():
                 else:
                     f.write(text + "\n")
         
-    # Create HTML Copy Paster Document
-    html_template = "template.html"
-    new_html_filename = "master_names.html"
-    html_line = """  <button
-    data-clipboard-text=\"master_name_goes_here\">master_name_goes_here</button>"""
-
-    with open(html_template, 'rU') as source_file:
-        with open(new_html_filename, 'w') as destination_file:
-            for line_number, line in enumerate(source_file, 1):
-                    if line_number == 40:
-                        for entry in ttg_filenames:
-                            destination_file.write(html_line.replace("master_name_goes_here",
-                                entry) + "\n")
-                            # destination_file.write("taco" + "\n")
-                    else:
-                        destination_file.write(line)
-    print "".join(["Writing out ", new_html_filename])
+    generate_html_page("template.html", "copy_paster.html", 40, TTG_FILENAMES) 
+    print "".join(["Writing out ", "copy_paster.html"])
 
     print "Done!"
 
