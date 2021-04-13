@@ -6,6 +6,7 @@ Generates .ttg files for Autodesk Flame using data from a CSV file.
 
 import argparse
 import csv
+import os
 import re
 
 def read_unicode_csv_file(filename):
@@ -24,7 +25,7 @@ def read_unicode_csv_file(filename):
         print ex
 
 def read_ttg_file(filename):
-    """Docstring to be."""
+    """Return contents of TTG file."""
 
     try:
         with open(filename, 'r') as open_file:
@@ -32,6 +33,13 @@ def read_ttg_file(filename):
             return contents
     except Exception as ex:
         print ex
+
+def find_ttg_dimensions(ttg_file_list):
+    """Docstring to be."""
+
+    results = {}
+
+    return results
 
 def find_ttg_keywords(ttg_file_list):
     """Returns a list with tuples containing the line number and contents for
@@ -84,6 +92,8 @@ def main():
         template TTG file and CSV full of data to fill in fields""")
     parser.add_argument("ttg_template", help="""path of the template TTG file""")
     parser.add_argument("csv_file", help="""path of the CSV file""")
+    parser.add_argument("output_path", 
+                        help="""path to a directory for output files""")
     parser.add_argument("-u", "--underscores", action="store_true",
                         help="""replace spaces and illegal characters in output filenames""")
     args = parser.parse_args()
@@ -100,20 +110,31 @@ def main():
     # Sort out csv
     csv_rows = read_unicode_csv_file(args.csv_file)
 
+    # Make sure output path exists
+    # Taken from https://stackoverflow.com/a/600612/119527
+    try:
+        os.makedirs(args.output_path)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(args.output_path):
+            pass
+        else:
+            raise
+
     # Start writing out ttgs
     print "Found %s rows in the CSV file." % len(csv_rows)
     TTG_FILENAMES = []
     for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
         filename = "_".join([tidy_text(row[5]), tidy_text(row[6]),
                              tidy_text(row[4])])
-        TTG_FILENAMES.append(filename)
-        print "".join(["Writing out ", filename, ".ttg"])
+        filepath = os.path.join(args.output_path, filename)
+        TTG_FILENAMES.append(filepath)
+        print "".join(["Writing out ", filepath, ".ttg"])
 
         # Assemble dict of keywords and entries for the replacements
         line_replacements = {keyword: entry for keyword, entry in
                              zip(csv_rows[0], csv_rows[1:][i])}
 
-        with open(".".join([filename, "ttg"]), "w") as f:
+        with open(".".join([filepath, "ttg"]), "w") as f:
             for line_number, text in enumerate(ttg_file_list, 1):
                 if line_number + 1 in unicode_keywords.keys():
                     new_text = line_replacements[unicode_keywords[line_number
