@@ -6,6 +6,7 @@ Generates .ttg files for Autodesk Flame using data from a CSV file.
 
 import argparse
 import csv
+import errno
 import os
 import re
 
