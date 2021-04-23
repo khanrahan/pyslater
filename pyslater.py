@@ -95,6 +95,8 @@ def main():
     parser.add_argument("csv_file", help="""path of the CSV file""")
     parser.add_argument("output_path", 
                         help="""path to a directory for output files""")
+    parser.add_argument("-n","--dry-run", action="store_true",
+                        help="""perform trial run with no files written""")
     parser.add_argument("-u", "--underscores", action="store_true",
                         help="""replace spaces and illegal characters in output filenames""")
     args = parser.parse_args()
@@ -135,21 +137,23 @@ def main():
         line_replacements = {keyword: entry for keyword, entry in
                              zip(csv_rows[0], csv_rows[1:][i])}
 
-        with open(".".join([filepath, "ttg"]), "w") as f:
-            for line_number, text in enumerate(ttg_file_list, 1):
-                if line_number + 1 in unicode_keywords.keys():
-                    new_text = line_replacements[unicode_keywords[line_number
-                                                                  + 1]]
-                    f.write("TextLength " +
-                            str(len(convert_to_ttg_text(new_text).split())) +
-                            "\n")
-                elif line_number in unicode_keywords.keys():
-                    new_text = line_replacements[unicode_keywords[line_number]]
-                    f.write("Text " + convert_to_ttg_text(new_text) + "\n")
-                else:
-                    f.write(text + "\n")
+        if args.dry_run is False:
+            with open(".".join([filepath, "ttg"]), "w") as f:
+                for line_number, text in enumerate(ttg_file_list, 1):
+                    if line_number + 1 in unicode_keywords.keys():
+                        new_text = line_replacements[unicode_keywords[line_number
+                                                                      + 1]]
+                        f.write("TextLength " +
+                                str(len(convert_to_ttg_text(new_text).split())) +
+                                "\n")
+                    elif line_number in unicode_keywords.keys():
+                        new_text = line_replacements[unicode_keywords[line_number]]
+                        f.write("Text " + convert_to_ttg_text(new_text) + "\n")
+                    else:
+                        f.write(text + "\n")
         
-    generate_html_page("template.html", "copy_paster.html", 40, TTG_FILENAMES) 
+            generate_html_page("template.html", "copy_paster.html", 40, TTG_FILENAMES) 
+    
     print "".join(["Writing out ", "copy_paster.html"])
 
     print "Done!"
