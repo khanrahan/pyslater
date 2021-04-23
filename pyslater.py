@@ -97,8 +97,6 @@ def main():
                         help="""path to a directory for output files""")
     parser.add_argument("-n","--dry-run", action="store_true",
                         help="""perform trial run with no files written""")
-    parser.add_argument("-u", "--underscores", action="store_true",
-                        help="""replace spaces and illegal characters in output filenames""")
     args = parser.parse_args()
 
     # Gather keywords in TTG file
