@@ -7,6 +7,7 @@ Generates .ttg files for Autodesk Flame using data from a CSV file.
 import argparse
 import csv
 import errno
+import fnmatch
 import os
 import re
 
@@ -95,7 +96,12 @@ def main():
     parser.add_argument("csv_file", help="""path of the CSV file""")
     parser.add_argument("output_path", 
                         help="""path to a directory for output files""")
-    parser.add_argument("-n","--dry-run", action="store_true",
+    parser.add_argument("--exclude", 
+                        action="append",
+                        metavar="""PATTERN""",
+                        help="""exclude lines from csv matching PATTERN""")
+    parser.add_argument("-n","--dry-run", 
+                        action="store_true",
                         help="""perform trial run with no files written""")
     args = parser.parse_args()
 
@@ -127,6 +133,12 @@ def main():
     for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
         filename = "_".join([tidy_text(row[5]), tidy_text(row[6]),
                              tidy_text(row[4])])
+        
+        #check output filename against filter exclude argument
+        if True in [fnmatch.fnmatch(filename, arg) for arg in args.exclude]:
+            print " ".join(["Exclude match. Skipping", filename])
+            continue
+        
         filepath = os.path.join(args.output_path, filename)
         TTG_FILENAMES.append(filepath)
         print "".join(["Writing out ", filepath, ".ttg"])
