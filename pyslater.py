@@ -96,14 +96,23 @@ def main():
     parser.add_argument("csv_file", help="""path of the CSV file""")
     parser.add_argument("output_path", 
                         help="""path to a directory for output files""")
-    parser.add_argument("--exclude", 
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--exclude", 
                         action="append",
-                        metavar="""PATTERN""",
+                        default=[],
+                        metavar="PATTERN",
                         help="""exclude lines from csv matching PATTERN""")
+    group.add_argument("--include",
+                        action="append",
+                        default=[],
+                        metavar="PATTERN",
+                        help="""include lines from csv matching PATTERN""")
     parser.add_argument("-n","--dry-run", 
                         action="store_true",
                         help="""perform trial run with no files written""")
     args = parser.parse_args()
+    if args.include == []:
+        args.include.append("*")
 
     # Gather keywords in TTG file
     ttg_file_list = read_ttg_file(args.ttg_template)
@@ -134,9 +143,17 @@ def main():
         filename = "_".join([tidy_text(row[5]), tidy_text(row[6]),
                              tidy_text(row[4])])
         
-        #check output filename against filter exclude argument
+        #check output filename against exclude argument
         if True in [fnmatch.fnmatch(filename, arg) for arg in args.exclude]:
-            print " ".join(["Exclude match. Skipping", filename])
+            print " ".join(["Skipping", filename])
+            continue
+       
+        #check output filename against include argument
+        if True in [fnmatch.fnmatch(filename, arg) for arg in args.include]:
+            print " ".join(["Proceeding with", filename])
+            pass
+        else:
+            print " ".join(["Skipping", filename])
             continue
         
         filepath = os.path.join(args.output_path, filename)
