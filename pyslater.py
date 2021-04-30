@@ -95,7 +95,10 @@ def main():
     parser.add_argument("ttg_template", help="""path of the template TTG file""")
     parser.add_argument("csv_file", help="""path of the CSV file""")
     parser.add_argument("output_path", 
-                        help="""path to a directory for output files""")
+                        default=os.getcwd(),
+                        help="""path to a directory for output files""",
+                        nargs="?",
+                        type=os.path.abspath)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--exclude", 
                         action="append",
@@ -156,8 +159,8 @@ def main():
             print " ".join(["Skipping", filename])
             continue
         
-        filepath = os.path.join(args.output_path, filename)
-        TTG_FILENAMES.append(filepath)
+        TTG_FILENAMES.append(filename)
+        filepath = os.path.join((args.output_path), filename)
         print "".join(["Writing out ", filepath, ".ttg"])
 
         # Assemble dict of keywords and entries for the replacements
@@ -178,10 +181,11 @@ def main():
                         f.write("Text " + convert_to_ttg_text(new_text) + "\n")
                     else:
                         f.write(text + "\n")
-        
-            generate_html_page("template.html", "copy_paster.html", 40, TTG_FILENAMES) 
+            
+            html_destination = os.path.join(args.output_path, "copy_paster.html")
+            generate_html_page("template.html", html_destination, 40, TTG_FILENAMES) 
     
-    print "".join(["Writing out ", "copy_paster.html"])
+    print " ".join(["Writing out", html_destination])
 
     print "Done!"
 
