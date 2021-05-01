@@ -36,13 +36,6 @@ def read_ttg_file(filename):
     except Exception as ex:
         print ex
 
-def find_ttg_dimensions(ttg_file_list):
-    """Docstring to be."""
-
-    results = {}
-
-    return results
-
 def find_ttg_keywords(ttg_file_list):
     """Returns a list with tuples containing the line number and contents for
     the keywords that are wrapped in percent symbols."""
@@ -73,19 +66,20 @@ def tidy_text(text):
     return tidy
 
 def generate_html_page(html_template, new_html_filename,
-        line_number_to_replace, list_of_replacements):
+                       line_number_to_replace, list_of_replacements):
+    """Generates HTML page of filenames to copy paste."""
     html_line = """  <button
     data-clipboard-text=\"master_name_goes_here\">master_name_goes_here</button>"""
 
     with open(html_template, 'rU') as source_file:
         with open(new_html_filename, 'w') as destination_file:
             for line_number, line in enumerate(source_file, 1):
-                    if line_number == line_number_to_replace:
-                        for entry in list_of_replacements:
-                            destination_file.write(html_line.replace("master_name_goes_here",
-                                entry) + "\n")
-                    else:
-                        destination_file.write(line)
+                if line_number == line_number_to_replace:
+                    for entry in list_of_replacements:
+                        destination_file.write(html_line.replace("master_name_goes_here",
+                                                                 entry) + "\n")
+                else:
+                    destination_file.write(line)
 
 def main():
     """Script that is run when called from the command line."""
@@ -94,23 +88,23 @@ def main():
         template TTG file and CSV full of data to fill in fields""")
     parser.add_argument("ttg_template", help="""path of the template TTG file""")
     parser.add_argument("csv_file", help="""path of the CSV file""")
-    parser.add_argument("output_path", 
+    parser.add_argument("output_path",
                         default=os.getcwd(),
                         help="""path to a directory for output files""",
                         nargs="?",
                         type=os.path.abspath)
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--exclude", 
-                        action="append",
-                        default=[],
-                        metavar="PATTERN",
-                        help="""exclude lines from csv matching PATTERN""")
+    group.add_argument("--exclude",
+                       action="append",
+                       default=[],
+                       metavar="PATTERN",
+                       help="""exclude lines from csv matching PATTERN""")
     group.add_argument("--include",
-                        action="append",
-                        default=[],
-                        metavar="PATTERN",
-                        help="""include lines from csv matching PATTERN""")
-    parser.add_argument("-n","--dry-run", 
+                       action="append",
+                       default=[],
+                       metavar="PATTERN",
+                       help="""include lines from csv matching PATTERN""")
+    parser.add_argument("-n", "--dry-run",
                         action="store_true",
                         help="""perform trial run with no files written""")
     args = parser.parse_args()
@@ -141,25 +135,26 @@ def main():
 
     # Start writing out ttgs
     print "Found %s rows in the CSV file." % len(csv_rows)
-    TTG_FILENAMES = []
+    ttg_filenames = []
     for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
         filename = "_".join([tidy_text(row[5]), tidy_text(row[6]),
                              tidy_text(row[4])])
-        
+
         #check output filename against exclude argument
         if True in [fnmatch.fnmatch(filename, arg) for arg in args.exclude]:
             print " ".join(["Skipping", filename])
             continue
-       
+
         #check output filename against include argument
         if True in [fnmatch.fnmatch(filename, arg) for arg in args.include]:
             print " ".join(["Proceeding with", filename])
-            pass
         else:
             print " ".join(["Skipping", filename])
             continue
-        
-        TTG_FILENAMES.append(filename)
+
+        ttg_filenames.append(filename)
+
+
         filepath = os.path.join((args.output_path), filename)
         print "".join(["Writing out ", filepath, ".ttg"])
 
@@ -168,23 +163,24 @@ def main():
                              zip(csv_rows[0], csv_rows[1:][i])}
 
         if args.dry_run is False:
-            with open(".".join([filepath, "ttg"]), "w") as f:
+            with open(".".join([filepath, "ttg"]), "w") as ttg:
                 for line_number, text in enumerate(ttg_file_list, 1):
                     if line_number + 1 in unicode_keywords.keys():
                         new_text = line_replacements[unicode_keywords[line_number
                                                                       + 1]]
-                        f.write("TextLength " +
-                                str(len(convert_to_ttg_text(new_text).split())) +
-                                "\n")
+                        ttg.write("TextLength " +
+                                  str(len(convert_to_ttg_text(new_text).split())) +
+                                  "\n")
                     elif line_number in unicode_keywords.keys():
                         new_text = line_replacements[unicode_keywords[line_number]]
-                        f.write("Text " + convert_to_ttg_text(new_text) + "\n")
+                        ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
                     else:
-                        f.write(text + "\n")
-            
+                        ttg.write(text + "\n")
+
             html_destination = os.path.join(args.output_path, "copy_paster.html")
-            generate_html_page("template.html", html_destination, 40, TTG_FILENAMES) 
-    
+            generate_html_page("template.html", html_destination, 40,
+                               ttg_filenames)
+
     print " ".join(["Writing out", html_destination])
 
     print "Done!"
