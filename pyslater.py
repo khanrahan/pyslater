@@ -86,8 +86,10 @@ def main():
 
     parser = argparse.ArgumentParser(description="""generates .ttg files using a
         template TTG file and CSV full of data to fill in fields""")
-    parser.add_argument("ttg_template", help="""path of the template TTG file""")
     parser.add_argument("csv_file", help="""path of the CSV file""")
+    parser.add_argument("ttg_template",
+                        nargs="?", 
+                        help="""path of the template TTG file""")
     parser.add_argument("output_path",
                         default=os.getcwd(),
                         help="""path to a directory for output files""",
@@ -107,6 +109,10 @@ def main():
     parser.add_argument("-n", "--dry-run",
                         action="store_true",
                         help="""perform trial run with no files written""")
+    parser.add_argument("--no-html-output",
+                        default=False,
+                        action="store_true", 
+                        help="""skip output of html""")
     args = parser.parse_args()
     if args.include == []:
         args.include.append("*")
@@ -176,12 +182,12 @@ def main():
                         ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
                     else:
                         ttg.write(text + "\n")
-
-            html_destination = os.path.join(args.output_path, "copy_paster.html")
-            generate_html_page("template.html", html_destination, 40,
-                               ttg_filenames)
-
-    print " ".join(["Writing out", html_destination])
+            
+    if args.no_html_output is False:
+        html_destination = os.path.join(args.output_path, "copy_paster.html")
+        print " ".join(["Writing out", html_destination])
+        generate_html_page("template.html", html_destination, 40,
+                           ttg_filenames)
 
     print "Done!"
 
