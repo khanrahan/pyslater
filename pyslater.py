@@ -95,6 +95,7 @@ def main():
                         help="""path to a directory for output files""",
                         nargs="?",
                         type=os.path.abspath)
+    
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--exclude",
                        action="append",
@@ -106,6 +107,11 @@ def main():
                        default=[],
                        metavar="PATTERN",
                        help="""include lines from csv matching PATTERN""")
+    
+    parser.add_argument("--output",
+                        default="{5}_{6}_{4}",
+                        help="template for output file names""",
+                        metavar="TEMPLATE")
     parser.add_argument("-n", "--dry-run",
                         action="store_true",
                         help="""perform trial run with no files written""")
@@ -113,6 +119,7 @@ def main():
                         default=False,
                         action="store_true", 
                         help="""skip output of html""")
+    
     args = parser.parse_args()
     if args.include == []:
         args.include.append("*")
@@ -143,15 +150,19 @@ def main():
     print "Found %s rows in the CSV file." % len(csv_rows)
     ttg_filenames = []
     for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
-        filename = "_".join([tidy_text(row[5]), tidy_text(row[6]),
-                             tidy_text(row[4])])
+        
+        row_tidy = [tidy_text(item) for item in row]
+        row_tidy_dict = {keyword: entry for keyword, entry
+                         in zip(csv_rows[0], row_tidy)}
+        
+        filename = args.output.format(* row_tidy, ** row_tidy_dict)
 
-        #check output filename against exclude argument
+        # Check output filename against exclude argument
         if True in [fnmatch.fnmatch(filename, arg) for arg in args.exclude]:
             print " ".join(["Skipping", filename])
             continue
 
-        #check output filename against include argument
+        # Check output filename against include argument
         if True in [fnmatch.fnmatch(filename, arg) for arg in args.include]:
             print " ".join(["Proceeding with", filename])
         else:
@@ -160,11 +171,11 @@ def main():
 
         ttg_filenames.append(filename)
 
-
         filepath = os.path.join((args.output_path), filename)
         print "".join(["Writing out ", filepath, ".ttg"])
 
-        # Assemble dict of keywords and entries for the replacements
+        # Assemble dict using header row for keys and row entries
+        # for the replacements
         line_replacements = {keyword: entry for keyword, entry in
                              zip(csv_rows[0], csv_rows[1:][i])}
 
