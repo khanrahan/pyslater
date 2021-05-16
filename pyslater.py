@@ -88,14 +88,14 @@ def main():
         template TTG file and CSV full of data to fill in fields""")
     parser.add_argument("csv_file", help="""path of the CSV file""")
     parser.add_argument("ttg_template",
-                        nargs="?", 
+                        nargs="?",
                         help="""path of the template TTG file""")
     parser.add_argument("output_path",
                         default=os.getcwd(),
                         help="""path to a directory for output files""",
                         nargs="?",
                         type=os.path.abspath)
-    
+
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--exclude",
                        action="append",
@@ -107,7 +107,7 @@ def main():
                        default=[],
                        metavar="PATTERN",
                        help="""include lines from csv matching PATTERN""")
-    
+
     parser.add_argument("--output",
                         default="{5}_{6}_{4}",
                         help="template for output file names""",
@@ -117,9 +117,9 @@ def main():
                         help="""perform trial run with no files written""")
     parser.add_argument("--no-html-output",
                         default=False,
-                        action="store_true", 
+                        action="store_true",
                         help="""skip output of html""")
-    
+
     args = parser.parse_args()
     if args.include == []:
         args.include.append("*")
@@ -150,11 +150,11 @@ def main():
     print "Found %s rows in the CSV file." % len(csv_rows)
     ttg_filenames = []
     for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
-        
+
         row_tidy = [tidy_text(item) for item in row]
         row_tidy_dict = {keyword: entry for keyword, entry
                          in zip(csv_rows[0], row_tidy)}
-        
+
         filename = args.output.format(* row_tidy, ** row_tidy_dict)
 
         # Check output filename against exclude argument
@@ -193,7 +193,7 @@ def main():
                         ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
                     else:
                         ttg.write(text + "\n")
-            
+
     if args.no_html_output is False:
         html_destination = os.path.join(args.output_path, "copy_paster.html")
         print " ".join(["Writing out", html_destination])
