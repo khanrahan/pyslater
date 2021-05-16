@@ -65,6 +65,17 @@ def tidy_text(text):
 
     return tidy
 
+def makedir_p(path):
+    """Make sure output path exists. 
+    Taken from https://stackoverflow.com/a/600612/119527"""
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+
 def generate_html_page(html_template, new_html_filename,
                        line_number_to_replace, list_of_replacements):
     """Generates HTML page of filenames to copy paste."""
@@ -136,15 +147,8 @@ def main():
     # Sort out csv
     csv_rows = read_unicode_csv_file(args.csv_file)
 
-    # Make sure output path exists
-    # Taken from https://stackoverflow.com/a/600612/119527
-    try:
-        os.makedirs(args.output_path)
-    except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(args.output_path):
-            pass
-        else:
-            raise
+    # Make output path
+    makedir_p(args.output_path)
 
     # Start writing out ttgs
     print "Found %s rows in the CSV file." % len(csv_rows)
