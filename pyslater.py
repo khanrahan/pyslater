@@ -56,6 +56,7 @@ def convert_to_ttg_text(string):
 
 def tidy_text(text):
     """Returns string that is appropriate for filename usage."""
+
     # Delete first and last character if a symbol or space.
     chopped = re.sub(r"^[\W_]+|[\W_]+$", "", text)
     # Convert symbols & whitespace to underscores.
@@ -68,6 +69,7 @@ def tidy_text(text):
 def makedir_p(path):
     """Make sure output path exists. 
     Taken from https://stackoverflow.com/a/600612/119527"""
+
     try:
         os.makedirs(path)
     except OSError as exc:
@@ -138,19 +140,18 @@ def main():
     # Gather keywords in TTG file
     ttg_file_list = read_ttg_file(args.ttg_template)
     ttg_keywords = find_ttg_keywords(ttg_file_list)
-
     unicode_keywords = {index: convert_from_ttg_text(raw_string) for index,
                         raw_string in ttg_keywords.items()}
     print "Found %s keywords in the TTG template:" % len(unicode_keywords)
     print ", ".join([keyword for line_number, keyword in unicode_keywords.iteritems()])
 
-    # Sort out csv
+    # Sort out CSV
     csv_rows = read_unicode_csv_file(args.csv_file)
 
     # Make output path
     makedir_p(args.output_path)
 
-    # Start writing out ttgs
+    # Start writing out TTGs
     print "Found %s rows in the CSV file." % len(csv_rows)
     ttg_filenames = []
     for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
