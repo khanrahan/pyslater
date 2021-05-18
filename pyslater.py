@@ -37,8 +37,8 @@ def read_ttg_file(filename):
         print ex
 
 def find_ttg_keywords(ttg_file_list):
-    """Returns a list with tuples containing the line number and contents for
-    the keywords that are wrapped in percent symbols."""
+    """Returns dictionary containing the line number and contents 
+    for the keywords that are wrapped in percent symbols."""
 
     return {line:text for line, text in enumerate(ttg_file_list, 1) if
             text.startswith('Text 37') and text.endswith('37')}
