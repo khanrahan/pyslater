@@ -37,7 +37,7 @@ def read_ttg_file(filename):
         print ex
 
 def find_ttg_keywords(ttg_file_list):
-    """Returns dictionary containing the line number and contents 
+    """Returns dictionary containing the line number and contents
     for the keywords that are wrapped in percent symbols."""
 
     return {line:text for line, text in enumerate(ttg_file_list, 1) if
@@ -67,7 +67,7 @@ def tidy_text(text):
     return tidy
 
 def makedir_p(path):
-    """Make sure output path exists. 
+    """Make sure output path exists.
     Taken from https://stackoverflow.com/a/600612/119527"""
 
     try:
@@ -93,6 +93,13 @@ def generate_html_page(html_template, new_html_filename,
                                                                  entry) + "\n")
                 else:
                     destination_file.write(line)
+                    
+def script_path():
+    """Returns the path to this script file.
+    Copied from https://stackoverflow.com/questions/918154/relative-paths-in-python"""
+
+    path = os.path.dirname(os.path.abspath(__file__))
+    return path
 
 def main():
     """Script that is run when called from the command line."""
@@ -200,8 +207,7 @@ def main():
                         ttg.write(text + "\n")
 
     if args.no_html_output is False:
-        template_path = os.path.join(os.path.dirname(__file__),
-                                     "template.html")
+        template_path = os.path.join(script_path(), "template.html")
         html_destination = os.path.join(args.output_path, "copy_paster.html")
         print " ".join(["Writing out", html_destination])
         generate_html_page(template_path, html_destination, 40,
