@@ -200,9 +200,11 @@ def main():
                         ttg.write(text + "\n")
 
     if args.no_html_output is False:
+        template_path = os.path.join(os.path.dirname(__file__),
+                                     "template.html")
         html_destination = os.path.join(args.output_path, "copy_paster.html")
         print " ".join(["Writing out", html_destination])
-        generate_html_page("template.html", html_destination, 40,
+        generate_html_page(template_path, html_destination, 40,
                            ttg_filenames)
 
     print "Done!"
