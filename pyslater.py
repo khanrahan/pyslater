@@ -54,6 +54,17 @@ def convert_to_ttg_text(string):
 
     return " ".join(str(ord(character)) for character in list(string))
 
+def common_path(paths):
+    """Returns common parent directory from list of paths.
+    Not necessary in Python 3.5 because of os.path.commonpath()"""
+
+    return os.path.dirname(os.path.commonprefix(paths))
+
+def expand_path(s):
+    """Expand shell variables and ~."""
+
+    return os.path.expandvars(os.path.expanduser(s))
+
 def tidy_text(text):
     """Returns string that is appropriate for filename usage."""
 
@@ -78,6 +89,11 @@ def makedir_p(path):
         else:
             raise
 
+def generate_ttg_filepath(output_template, entries_list, entries_dict):
+    """ """
+
+    return result
+
 def generate_html_page(html_template, new_html_filename,
                        line_number_to_replace, list_of_replacements):
     """Generates HTML page of filenames to copy paste."""
@@ -93,13 +109,21 @@ def generate_html_page(html_template, new_html_filename,
                                                                  entry) + "\n")
                 else:
                     destination_file.write(line)
-                    
+
 def script_path():
     """Returns the path to this script file.
     Copied from https://stackoverflow.com/questions/918154/relative-paths-in-python"""
 
     path = os.path.dirname(os.path.abspath(__file__))
     return path
+
+def validate_output_template(string):
+    """Ensure argparse output template argument has correct .ttg file extension."""
+
+    if string.endswith(".ttg") is False:
+        raise argparse.ArgumentTypeError("Output template must end in .ttg")
+    return string
+
 
 def main():
     """Script that is run when called from the command line."""
@@ -110,11 +134,6 @@ def main():
     parser.add_argument("ttg_template",
                         nargs="?",
                         help="""path of the template TTG file""")
-    parser.add_argument("output_path",
-                        default=os.getcwd(),
-                        help="""path to a directory for output files""",
-                        nargs="?",
-                        type=os.path.abspath)
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--exclude",
@@ -128,10 +147,11 @@ def main():
                        metavar="PATTERN",
                        help="""include lines from csv matching PATTERN""")
 
-    parser.add_argument("--output",
-                        default="{5}_{6}_{4}",
+    parser.add_argument("-o", "--output",
+                        default=os.path.join(os.getcwd(), "{5}_{6}_{4}"),
                         help="template for output file names""",
-                        metavar="TEMPLATE")
+                        metavar="TEMPLATE",
+                        type=validate_output_template)
     parser.add_argument("-n", "--dry-run",
                         action="store_true",
                         help="""perform trial run with no files written""")
@@ -155,9 +175,6 @@ def main():
     # Sort out CSV
     csv_rows = read_unicode_csv_file(args.csv_file)
 
-    # Make output path
-    makedir_p(args.output_path)
-
     # Start writing out TTGs
     print "Found %s rows in the CSV file." % len(csv_rows)
     ttg_filenames = []
@@ -167,24 +184,25 @@ def main():
         row_tidy_dict = {keyword: entry for keyword, entry
                          in zip(csv_rows[0], row_tidy)}
 
-        filename = args.output.format(* row_tidy, ** row_tidy_dict)
+        filepath = expand_path(args.output).format(* row_tidy, ** row_tidy_dict)
+        #filepath = generate_ttg_filepath(row, header_row, )
 
         # Check output filename against exclude argument
-        if True in [fnmatch.fnmatch(filename, arg) for arg in args.exclude]:
-            print " ".join(["Skipping", filename])
+        if True in [fnmatch.fnmatch(filepath, arg) for arg in args.exclude]:
+            print " ".join(["Skipping", filepath])
             continue
 
         # Check output filename against include argument
-        if True in [fnmatch.fnmatch(filename, arg) for arg in args.include]:
-            print " ".join(["Proceeding with", filename])
+        if True in [fnmatch.fnmatch(filepath, arg) for arg in args.include]:
+            print " ".join(["Proceeding with", filepath])
         else:
-            print " ".join(["Skipping", filename])
+            print " ".join(["Skipping", filepath])
             continue
 
-        ttg_filenames.append(filename)
+        ttg_filenames.append(filepath)
 
-        filepath = os.path.join((args.output_path), filename)
-        print "".join(["Writing out ", filepath, ".ttg"])
+        #if args.ttg_template is False:
+        print "".join(["Writing out ", filepath])
 
         # Assemble dict using header row for keys and row entries
         # for the replacements
@@ -192,7 +210,10 @@ def main():
                              zip(csv_rows[0], csv_rows[1:][i])}
 
         if args.dry_run is False:
-            with open(".".join([filepath, "ttg"]), "w") as ttg:
+            #Make output path
+            makedir_p(os.path.dirname(filepath))
+
+            with open(filepath, "w") as ttg:
                 for line_number, text in enumerate(ttg_file_list, 1):
                     if line_number + 1 in unicode_keywords.keys():
                         new_text = line_replacements[unicode_keywords[line_number
@@ -208,10 +229,12 @@ def main():
 
     if args.no_html_output is False:
         template_path = os.path.join(script_path(), "template.html")
-        html_destination = os.path.join(args.output_path, "copy_paster.html")
+        html_destination = os.path.join(common_path(ttg_filenames),
+                                        "copy_paster.html")
         print " ".join(["Writing out", html_destination])
-        generate_html_page(template_path, html_destination, 40,
-                           ttg_filenames)
+        if args.dry_run is False:
+            generate_html_page(template_path, html_destination, 40,
+                               ttg_filenames)
 
     print "Done!"
 
