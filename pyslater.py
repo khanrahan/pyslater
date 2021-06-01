@@ -188,7 +188,7 @@ def main():
 
     # Assemble output TTG filepaths
     ttg_results = []
-    for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
+    for row_number, row in enumerate(csv_rows[1:]): #skip header row and start at 1
 
         row_tidy = [tidy_text(item) for item in row]
         row_tidy_dict = {keyword: entry for keyword, entry
@@ -198,14 +198,14 @@ def main():
 
         # Check output filename against exclude argument
         if True in [fnmatch.fnmatch(filepath, arg) for arg in args.exclude]:
-            print " ".join(["Skipping", filepath])
+            print " ".join(["Skipping", filename_no_ext(filepath)])
             continue
 
         # Check output filename against include argument
         if True in [fnmatch.fnmatch(filepath, arg) for arg in args.include]:
-            print " ".join(["Proceeding with", filepath])
+            print " ".join(["Proceeding with", filename_no_ext(filepath)])
         else:
-            print " ".join(["Skipping", filepath])
+            print " ".join(["Skipping", filename_no_ext(filepath)])
             continue
 
         ttg_results.append(filepath)
@@ -217,7 +217,7 @@ def main():
             # Assemble dict using header row for keys and row entries
             # for the replacements
             line_replacements = {keyword: entry for keyword, entry in
-                                 zip(csv_rows[0], csv_rows[1:][i])}
+                                 zip(csv_rows[0], csv_rows[1:][row_number])}
 
             if args.dry_run is False:
                 #Make output path if necessary
