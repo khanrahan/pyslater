@@ -45,7 +45,7 @@ def find_ttg_keywords(ttg_file_list):
 
 def convert_from_ttg_text(decimal_string):
     """Returns unicode standard string minus the "Text" at the beginning
-    and the % / 37 keyword wrappers"""
+   and the % / 37 keyword wrappers"""
 
     return "".join(unichr(int(character)) for character in decimal_string.split()[2:-1])
 
@@ -65,6 +65,11 @@ def expand_path(s):
 
     return os.path.expandvars(os.path.expanduser(s))
 
+def filename_no_ext(filepath):
+    """Return just filename without extension."""
+
+    return os.path.splitext(os.path.basename(filepath))[0]
+
 def tidy_text(text):
     """Returns string that is appropriate for filename usage."""
 
@@ -77,14 +82,16 @@ def tidy_text(text):
 
     return tidy
 
-def makedir_p(path):
-    """Make sure output path exists.
-    Taken from https://stackoverflow.com/a/600612/119527"""
+def makedirs(filepath):
+    """Make sure out the directories exist for given filepath
+    Copied from https://stackoverflow.com/a/600612/119527"""
+
+    dirpath = os.path.dirname(filepath)
 
     try:
-        os.makedirs(path)
+        os.makedirs(dirpath)
     except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
+        if exc.errno == errno.EEXIST:
             pass
         else:
             raise
@@ -181,6 +188,7 @@ def main():
 
     # Assemble output TTG filepaths
     ttg_filenames = []
+    ttg_results = []
     for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
 
         row_tidy = [tidy_text(item) for item in row]
@@ -201,7 +209,7 @@ def main():
             print " ".join(["Skipping", filepath])
             continue
 
-        ttg_filenames.append(filepath)
+        ttg_results.append(filepath)
         
         # Start writing out TTGs
         if args.ttg_template is not None:
@@ -213,8 +221,8 @@ def main():
                                  zip(csv_rows[0], csv_rows[1:][i])}
 
             if args.dry_run is False:
-                #Make output path
-                makedir_p(os.path.dirname(filepath))
+                #Make output path if necessary
+                makedirs(filepath)
 
                 with open(filepath, "w") as ttg:
                     for line_number, text in enumerate(ttg_file_list, 1):
@@ -232,10 +240,14 @@ def main():
 
     if args.no_html_output is False:
         template_path = os.path.join(script_path(), "template.html")
-        html_destination = os.path.join(common_path(ttg_filenames),
+        html_destination = os.path.join(common_path(ttg_results),
                                         "copy_paster.html")
+        ttg_filenames = [filename_no_ext(i) for i in ttg_results]
+
         print " ".join(["Writing out", html_destination])
+
         if args.dry_run is False:
+            makedirs(html_destination)
             generate_html_page(template_path, html_destination, 40,
                                ttg_filenames)
 
