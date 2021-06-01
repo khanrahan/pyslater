@@ -187,7 +187,6 @@ def main():
         print ", ".join([keyword for line_number, keyword in unicode_keywords.iteritems()])
 
     # Assemble output TTG filepaths
-    ttg_filenames = []
     ttg_results = []
     for i, row in enumerate(csv_rows[1:]): #skip header row and start at 1
 
