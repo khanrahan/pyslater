@@ -24,7 +24,7 @@ def read_unicode_csv_file(filename):
                 unicode_rows.append(unicode_row)
             return tuple(unicode_rows)
     except Exception as ex:
-        print ex
+        raise ex
 
 def read_ttg_file(filename):
     """Return contents of TTG file."""
@@ -34,7 +34,7 @@ def read_ttg_file(filename):
             contents = open_file.read().splitlines()
             return contents
     except Exception as ex:
-        print ex
+        raise ex
 
 def find_ttg_keywords(ttg_file_list):
     """Returns dictionary containing the line number and contents
@@ -60,10 +60,10 @@ def common_path(paths):
 
     return os.path.dirname(os.path.commonprefix(paths))
 
-def expand_path(s):
+def expand_path(path):
     """Expand shell variables and ~."""
 
-    return os.path.expandvars(os.path.expanduser(s))
+    return os.path.expandvars(os.path.expanduser(path))
 
 def filename_no_ext(filepath):
     """Return just filename without extension."""
@@ -96,10 +96,10 @@ def makedirs(filepath):
         else:
             raise
 
-def generate_ttg_filepath(output_template, entries_list, entries_dict):
-    """ """
-
-    return result
+#def generate_ttg_filepath(output_template, entries_list, entries_dict):
+#    """ """
+#
+#    return result
 
 def generate_html_page(html_template, new_html_filename,
                        line_number_to_replace, list_of_replacements):
@@ -173,16 +173,16 @@ def main():
 
     # Sort out CSV
     csv_rows = read_unicode_csv_file(args.csv_file)
-    
+
     print "Found %s rows in the CSV file." % len(csv_rows)
-    
+
     # Gather keywords in TTG file
     if args.ttg_template is not None:
         ttg_file_list = read_ttg_file(args.ttg_template)
         ttg_keywords = find_ttg_keywords(ttg_file_list)
         unicode_keywords = {index: convert_from_ttg_text(raw_string) for index,
                             raw_string in ttg_keywords.items()}
-        
+
         print "Found %s keywords in the TTG template:" % len(unicode_keywords)
         print ", ".join([keyword for line_number, keyword in unicode_keywords.iteritems()])
 
@@ -210,7 +210,7 @@ def main():
             continue
 
         ttg_results.append(filepath)
-        
+
         # Start writing out TTGs
         if args.ttg_template is not None:
             print "".join(["Writing out ", filepath])
