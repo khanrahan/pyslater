@@ -89,8 +89,8 @@ def makedirs(filepath):
 
     try:
         os.makedirs(dirpath)
-    except OSError as exc:
-        if exc.errno == errno.EEXIST:
+    except OSError as ex:
+        if ex.errno == errno.EEXIST:
             pass
         else:
             raise
