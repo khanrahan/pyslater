@@ -12,8 +12,7 @@ import os
 import re
 
 def read_unicode_csv_file(filename):
-    """Returns a tuple of list data from a csv file passed to it.
-    Prints any exceptions from reading the file."""
+    """Returns a tuple of list data from a csv file passed to it."""
 
     try:
         with open(filename, 'rU') as open_file: #remove the U. use newline=
