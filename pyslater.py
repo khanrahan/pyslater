@@ -129,16 +129,39 @@ def validate_output_template(string):
         raise argparse.ArgumentTypeError("Output template must end in .ttg")
     return string
 
+#def validate_skip_rows(string):
+#    """Ensure argparse skip-rows argument is correct."""
+#
+#    try:
+#        number = int(string)
+#    except:
+#        raise argparse.ArgumentTypeError("Must be a number")
+#
+#    rows_skipped = range(number)
+#    return rows_skipped
+
 def validate_skip_rows(string):
-    """Ensure argparse skip-rows argument is correct."""
+    """Ensure argparse string is numbers listed in range notation
+    and/or single numbers separated by commas.  Expand into a single list.
+    Copied from https://gist.github.com/kgaughan/2491663"""
 
-    try:
-        number = int(string)
-    except:
-        raise argparse.ArgumentTypeError("Must be a number")
+    single_frames = set()
 
-    rows_skipped = range(number)
-    return rows_skipped
+    for element in string.split(','):
+        parts = [int(x) for x in element.split('-')]
+        if len(parts) == 1:
+            single_frames.add(parts[0])
+        else:
+            for frame in range(min(parts), max(parts) + 1):
+                single_frames.add(frame)
+
+    return list(single_frames)
+
+def list_offset(values, offset):
+    """Offset each entry in a list of integers by a given offset value."""
+
+    return [x + offset for x in values]
+
 
 
 def main():
@@ -182,7 +205,6 @@ def main():
                         help="""number of rows to skip in CSV""")
 
     args = parser.parse_args()
-    print args
 
     if args.include == []:
         args.include.append("*")
@@ -206,7 +228,7 @@ def main():
     ttg_results = []
 
     for row_number, row in enumerate(csv_rows):
-        if row_number in args.skip_rows:
+        if row_number in list_offset(args.skip_rows, -1):
             print " ".join(["Skipping row", str(row_number + 1)])
             continue
         else:
