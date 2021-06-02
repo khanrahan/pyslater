@@ -129,6 +129,17 @@ def validate_output_template(string):
         raise argparse.ArgumentTypeError("Output template must end in .ttg")
     return string
 
+def validate_skip_rows(string):
+    """Ensure argparse skip-rows argument is correct."""
+
+    try:
+        number = int(string)
+    except:
+        raise argparse.ArgumentTypeError("Must be a number")
+
+    rows_skipped = range(number)
+    return rows_skipped
+
 
 def main():
     """Script that is run when called from the command line."""
@@ -164,8 +175,15 @@ def main():
                         default=False,
                         action="store_true",
                         help="""skip output of html""")
+    parser.add_argument("--skip-rows",
+                        default=[0],
+                        metavar="NUMBER",
+                        type=validate_skip_rows,
+                        help="""number of rows to skip in CSV""")
 
     args = parser.parse_args()
+    print args
+
     if args.include == []:
         args.include.append("*")
 
@@ -186,54 +204,58 @@ def main():
 
     # Assemble output TTG filepaths
     ttg_results = []
-    for row_number, row in enumerate(csv_rows[1:]): #skip header row and start at 1
 
-        row_tidy = [tidy_text(item) for item in row]
-        row_tidy_dict = {keyword: entry for keyword, entry
-                         in zip(csv_rows[0], row_tidy)}
-
-        filepath = expand_path(args.output).format(* row_tidy, ** row_tidy_dict)
-
-        # Check output filename against exclude argument
-        if True in [fnmatch.fnmatch(filepath, arg) for arg in args.exclude]:
-            print " ".join(["Skipping", filename_no_ext(filepath)])
+    for row_number, row in enumerate(csv_rows):
+        if row_number in args.skip_rows:
+            print " ".join(["Skipping row", str(row_number + 1)])
             continue
-
-        # Check output filename against include argument
-        if True in [fnmatch.fnmatch(filepath, arg) for arg in args.include]:
-            print " ".join(["Proceeding with", filename_no_ext(filepath)])
         else:
-            print " ".join(["Skipping", filename_no_ext(filepath)])
-            continue
+            row_tidy = [tidy_text(item) for item in row]
+            row_tidy_dict = {keyword: entry for keyword, entry
+                             in zip(csv_rows[0], row_tidy)}
 
-        ttg_results.append(filepath)
+            filepath = expand_path(args.output).format(* row_tidy, ** row_tidy_dict)
 
-        # Start writing out TTGs
-        if args.ttg_template is not None:
-            print "".join(["Writing out ", filepath])
+            # Check output filename against exclude argument
+            if True in [fnmatch.fnmatch(filepath, arg) for arg in args.exclude]:
+                print " ".join(["Skipping", filename_no_ext(filepath)])
+                continue
 
-            # Assemble dict using header row for keys and row entries
-            # for the replacements
-            line_replacements = {keyword: entry for keyword, entry in
-                                 zip(csv_rows[0], csv_rows[1:][row_number])}
+            # Check output filename against include argument
+            if True in [fnmatch.fnmatch(filepath, arg) for arg in args.include]:
+                print " ".join(["Proceeding with", filename_no_ext(filepath)])
+            else:
+                print " ".join(["Skipping", filename_no_ext(filepath)])
+                continue
 
-            if args.dry_run is False:
-                #Make output path if necessary
-                makedirs(filepath)
+            ttg_results.append(filepath)
 
-                with open(filepath, "w") as ttg:
-                    for line_number, text in enumerate(ttg_file_list, 1):
-                        if line_number + 1 in unicode_keywords.keys():
-                            new_text = line_replacements[unicode_keywords[line_number
-                                                                          + 1]]
-                            ttg.write("TextLength " +
-                                      str(len(convert_to_ttg_text(new_text).split())) +
-                                      "\n")
-                        elif line_number in unicode_keywords.keys():
-                            new_text = line_replacements[unicode_keywords[line_number]]
-                            ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
-                        else:
-                            ttg.write(text + "\n")
+            # Start writing out TTGs
+            if args.ttg_template is not None:
+                print "".join(["Writing out ", filepath])
+
+                # Assemble dict using header row for keys and row entries
+                # for the replacements
+                line_replacements = {keyword: entry for keyword, entry in
+                                     zip(csv_rows[0], csv_rows[1:][row_number])}
+
+                if args.dry_run is False:
+                    #Make output path if necessary
+                    makedirs(filepath)
+
+                    with open(filepath, "w") as ttg:
+                        for line_number, text in enumerate(ttg_file_list, 1):
+                            if line_number + 1 in unicode_keywords.keys():
+                                new_text = line_replacements[unicode_keywords[line_number
+                                                                              + 1]]
+                                ttg.write("TextLength " +
+                                          str(len(convert_to_ttg_text(new_text).split())) +
+                                          "\n")
+                            elif line_number in unicode_keywords.keys():
+                                new_text = line_replacements[unicode_keywords[line_number]]
+                                ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
+                            else:
+                                ttg.write(text + "\n")
 
     if args.no_html_output is False:
         template_path = os.path.join(script_path(), "template.html")
