@@ -121,8 +121,7 @@ def script_path():
     """Returns the path to this script file.
     Copied from https://stackoverflow.com/questions/918154/relative-paths-in-python"""
 
-    path = os.path.dirname(os.path.abspath(__file__))
-    return path
+    return os.path.dirname(os.path.abspath(__file__))
 
 def validate_output_template(string):
     """Ensure argparse output template argument has correct .ttg file extension."""
