@@ -179,12 +179,12 @@ def main():
                        action="append",
                        default=[],
                        metavar="PATTERN",
-                       help="""exclude lines from csv matching PATTERN""")
+                       help="""exclude lines from CSV matching PATTERN""")
     group.add_argument("--include",
                        action="append",
                        default=[],
                        metavar="PATTERN",
-                       help="""include lines from csv matching PATTERN""")
+                       help="""include lines from CSV matching PATTERN""")
 
     parser.add_argument("-o", "--output",
                         default=os.path.join(os.getcwd(), "{5}_{6}_{4}"),
@@ -197,7 +197,7 @@ def main():
     parser.add_argument("--no-html-output",
                         default=False,
                         action="store_true",
-                        help="""skip output of html""")
+                        help="""skip output of HTML""")
     parser.add_argument("--skip-rows",
                         default=[0],
                         metavar="NUMBER",
