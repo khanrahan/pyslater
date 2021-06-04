@@ -163,7 +163,6 @@ def list_offset(values, offset):
     return [x + offset for x in values]
 
 
-
 def main():
     """Script that is run when called from the command line."""
 
@@ -211,7 +210,7 @@ def main():
                         action="store_true",
                         help="""skip output of HTML""")
     #parser.add_argument("--skip-rows",
-    #                    default=[0],
+    #                    default=[1],
     #                    metavar="NUMBER",
     #                    type=validate_skip_rows,
     #                    help="""number of rows to skip in CSV""")
@@ -271,7 +270,7 @@ def main():
                 # Assemble dict using header row for keys and row entries
                 # for the replacements
                 line_replacements = {keyword: entry for keyword, entry in
-                                     zip(csv_rows[0], csv_rows[1:][row_number])}
+                                     zip(csv_rows[0], csv_rows[row_number])}
 
                 if args.dry_run is False:
                     #Make output path if necessary
