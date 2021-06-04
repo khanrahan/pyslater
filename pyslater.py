@@ -11,6 +11,7 @@ import fnmatch
 import os
 import re
 
+
 def read_unicode_csv_file(filename):
     """Returns a tuple of list data from a csv file passed to it."""
 
@@ -219,11 +220,6 @@ def main():
     if args.include == []:
         args.include.append("*")
 
-    # Sort out CSV
-    csv_rows = read_unicode_csv_file(args.csv_file)
-
-    print "Found %s rows in the CSV file." % len(csv_rows)
-
     # Gather keywords in TTG file
     if args.ttg_template is not None:
         ttg_file_list = read_ttg_file(args.ttg_template)
@@ -234,6 +230,10 @@ def main():
         print "Found %s keywords in the TTG template:" % len(unicode_keywords)
         print ", ".join([keyword for line_number, keyword in unicode_keywords.iteritems()])
 
+    # Sort out CSV
+    csv_rows = read_unicode_csv_file(args.csv_file)
+    print "Found %s rows in the CSV file." % len(csv_rows)
+    
     # Assemble output TTG filepaths
     ttg_results = []
 
