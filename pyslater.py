@@ -129,17 +129,6 @@ def validate_output_template(string):
         raise argparse.ArgumentTypeError("Output template must end in .ttg")
     return string
 
-#def validate_skip_rows(string):
-#    """Ensure argparse skip-rows argument is correct."""
-#
-#    try:
-#        number = int(string)
-#    except:
-#        raise argparse.ArgumentTypeError("Must be a number")
-#
-#    rows_skipped = range(number)
-#    return rows_skipped
-
 def validate_exclude_rows(string):
     """Ensure argparse string is numbers listed in range notation
     and/or single numbers separated by commas.  Expand into a single list.
@@ -209,11 +198,6 @@ def main():
                         default=False,
                         action="store_true",
                         help="""skip output of HTML""")
-    #parser.add_argument("--skip-rows",
-    #                    default=[1],
-    #                    metavar="NUMBER",
-    #                    type=validate_skip_rows,
-    #                    help="""number of rows to skip in CSV""")
 
     args = parser.parse_args()
 
