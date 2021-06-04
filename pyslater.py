@@ -140,7 +140,7 @@ def validate_output_template(string):
 #    rows_skipped = range(number)
 #    return rows_skipped
 
-def validate_skip_rows(string):
+def validate_exclude_rows(string):
     """Ensure argparse string is numbers listed in range notation
     and/or single numbers separated by commas.  Expand into a single list.
     Copied from https://gist.github.com/kgaughan/2491663"""
@@ -174,17 +174,29 @@ def main():
                         nargs="?",
                         help="""path of the template TTG file""")
 
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--exclude",
+    filter_rows = parser.add_mutually_exclusive_group()
+    filter_rows.add_argument("--exclude",
                        action="append",
                        default=[],
                        metavar="PATTERN",
                        help="""exclude lines from CSV matching PATTERN""")
-    group.add_argument("--include",
+    filter_rows.add_argument("--include",
                        action="append",
                        default=[],
                        metavar="PATTERN",
                        help="""include lines from CSV matching PATTERN""")
+
+    filter_row_numbers = parser.add_mutually_exclusive_group()
+    filter_row_numbers.add_argument("--exclude-rows",
+                             default=[1],
+                             metavar="NUMBERS",
+                             type=validate_exclude_rows,
+                             help="""row numbers to exclude in CSV""")
+    filter_row_numbers.add_argument("--include-rows",
+                             default=[],
+                             metavar="NUMBERS",
+                             type=validate_exclude_rows,
+                             help="""row numbers to include in CSV""")
 
     parser.add_argument("-o", "--output",
                         default=os.path.join(os.getcwd(), "{5}_{6}_{4}"),
@@ -198,11 +210,11 @@ def main():
                         default=False,
                         action="store_true",
                         help="""skip output of HTML""")
-    parser.add_argument("--skip-rows",
-                        default=[0],
-                        metavar="NUMBER",
-                        type=validate_skip_rows,
-                        help="""number of rows to skip in CSV""")
+    #parser.add_argument("--skip-rows",
+    #                    default=[0],
+    #                    metavar="NUMBER",
+    #                    type=validate_skip_rows,
+    #                    help="""number of rows to skip in CSV""")
 
     args = parser.parse_args()
 
@@ -228,7 +240,7 @@ def main():
     ttg_results = []
 
     for row_number, row in enumerate(csv_rows):
-        if row_number in list_offset(args.skip_rows, -1):
+        if row_number in list_offset(args.exclude_rows, -1):
             print " ".join(["Skipping row", str(row_number + 1)])
             continue
         else:
