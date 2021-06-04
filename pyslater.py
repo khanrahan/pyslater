@@ -25,6 +25,7 @@ def read_unicode_csv_file(filename):
     except Exception as ex:
         raise ex
 
+
 def read_ttg_file(filename):
     """Return contents of TTG file."""
 
@@ -35,6 +36,7 @@ def read_ttg_file(filename):
     except Exception as ex:
         raise ex
 
+
 def find_ttg_keywords(ttg_file_list):
     """Returns dictionary containing the line number and contents
     for the keywords that are wrapped in percent symbols."""
@@ -42,16 +44,19 @@ def find_ttg_keywords(ttg_file_list):
     return {line:text for line, text in enumerate(ttg_file_list, 1) if
             text.startswith('Text 37') and text.endswith('37')}
 
+
 def convert_from_ttg_text(decimal_string):
     """Returns unicode standard string minus the "Text" at the beginning
    and the % / 37 keyword wrappers"""
 
     return "".join(unichr(int(character)) for character in decimal_string.split()[2:-1])
 
+
 def convert_to_ttg_text(string):
     """Returns TTG style string"""
 
     return " ".join(str(ord(character)) for character in list(string))
+
 
 def common_path(paths):
     """Returns common parent directory from list of paths.
@@ -59,15 +64,18 @@ def common_path(paths):
 
     return os.path.dirname(os.path.commonprefix(paths))
 
+
 def expand_path(path):
     """Expand shell variables and ~."""
 
     return os.path.expandvars(os.path.expanduser(path))
 
+
 def filename_no_ext(filepath):
     """Return just filename without extension."""
 
     return os.path.splitext(os.path.basename(filepath))[0]
+
 
 def tidy_text(text):
     """Returns string that is appropriate for filename usage."""
@@ -80,6 +88,7 @@ def tidy_text(text):
     tidy = re.sub(r"(_)\1+", "_", sanitized)
 
     return tidy
+
 
 def makedirs(filepath):
     """Make sure out the directories exist for given filepath
@@ -95,10 +104,12 @@ def makedirs(filepath):
         else:
             raise
 
+
 #def generate_ttg_filepath(output_template, entries_list, entries_dict):
 #    """ """
 #
 #    return result
+
 
 def generate_html_page(html_template, new_html_filename,
                        line_number_to_replace, list_of_replacements):
@@ -116,11 +127,13 @@ def generate_html_page(html_template, new_html_filename,
                 else:
                     destination_file.write(line)
 
+
 def script_path():
     """Returns the path to this script file.
     Copied from https://stackoverflow.com/questions/918154/relative-paths-in-python"""
 
     return os.path.dirname(os.path.abspath(__file__))
+
 
 def validate_output_template(string):
     """Ensure argparse output template argument has correct .ttg file extension."""
@@ -128,6 +141,7 @@ def validate_output_template(string):
     if string.endswith(".ttg") is False:
         raise argparse.ArgumentTypeError("Output template must end in .ttg")
     return string
+
 
 def validate_exclude_rows(string):
     """Ensure argparse string is numbers listed in range notation
@@ -145,6 +159,7 @@ def validate_exclude_rows(string):
                 single_frames.add(frame)
 
     return list(single_frames)
+
 
 def list_offset(values, offset):
     """Offset each entry in a list of integers by a given offset value."""
@@ -164,27 +179,27 @@ def main():
 
     filter_rows = parser.add_mutually_exclusive_group()
     filter_rows.add_argument("--exclude",
-                       action="append",
-                       default=[],
-                       metavar="PATTERN",
-                       help="""exclude lines from CSV matching PATTERN""")
+                             action="append",
+                             default=[],
+                             metavar="PATTERN",
+                             help="""exclude lines from CSV matching PATTERN""")
     filter_rows.add_argument("--include",
-                       action="append",
-                       default=[],
-                       metavar="PATTERN",
-                       help="""include lines from CSV matching PATTERN""")
+                             action="append",
+                             default=[],
+                             metavar="PATTERN",
+                             help="""include lines from CSV matching PATTERN""")
 
     filter_row_numbers = parser.add_mutually_exclusive_group()
     filter_row_numbers.add_argument("--exclude-rows",
-                             default=[1],
-                             metavar="NUMBERS",
-                             type=validate_exclude_rows,
-                             help="""row numbers to exclude in CSV""")
+                                    default=[1],
+                                    metavar="NUMBERS",
+                                    type=validate_exclude_rows,
+                                    help="""row numbers to exclude in CSV""")
     filter_row_numbers.add_argument("--include-rows",
-                             default=[],
-                             metavar="NUMBERS",
-                             type=validate_exclude_rows,
-                             help="""row numbers to include in CSV""")
+                                    default=[],
+                                    metavar="NUMBERS",
+                                    type=validate_exclude_rows,
+                                    help="""row numbers to include in CSV""")
 
     parser.add_argument("-o", "--output",
                         default=os.path.join(os.getcwd(), "{5}_{6}_{4}"),
@@ -288,6 +303,7 @@ def main():
                                ttg_filenames)
 
     print "Done!"
+
 
 if __name__ == "__main__":
     main()
