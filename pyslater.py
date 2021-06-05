@@ -106,12 +106,6 @@ def makedirs(filepath):
             raise
 
 
-#def generate_ttg_filepath(output_template, entries_list, entries_dict):
-#    """ """
-#
-#    return result
-
-
 def generate_html_page(html_template, new_html_filename,
                        line_number_to_replace, list_of_replacements):
     """Generates HTML page of filenames to copy paste."""
@@ -136,14 +130,6 @@ def script_path():
     return os.path.dirname(os.path.abspath(__file__))
 
 
-def validate_output_template(string):
-    """Ensure argparse output template argument has correct .ttg file extension."""
-
-    if string.endswith(".ttg") is False:
-        raise argparse.ArgumentTypeError("Output template must end in .ttg")
-    return string
-
-
 def validate_exclude_rows(string):
     """Ensure argparse string is numbers listed in range notation
     and/or single numbers separated by commas.  Expand into a single list.
@@ -162,10 +148,18 @@ def validate_exclude_rows(string):
     return list(single_frames)
 
 
-def list_offset(values, offset):
+def validate_output_template(string):
+    """Ensure argparse output template argument has correct .ttg file extension."""
+
+    if string.endswith(".ttg") is False:
+        raise argparse.ArgumentTypeError("Output template must end in .ttg")
+    return string
+
+
+def list_offset(list_of_integers, offset):
     """Offset each entry in a list of integers by a given offset value."""
 
-    return [x + offset for x in values]
+    return [x + offset for x in list_of_integers]
 
 
 def main():
@@ -233,7 +227,7 @@ def main():
     # Sort out CSV
     csv_rows = read_unicode_csv_file(args.csv_file)
     print "Found %s rows in the CSV file." % len(csv_rows)
-    
+
     # Assemble output TTG filepaths
     ttg_results = []
 
