@@ -216,12 +216,10 @@ def main():
     csv_rows = read_unicode_csv_file(args.csv_file)
 
     # Modify Args
-    args = parser.parse_args()
-
     if args.include == []:
         args.include.append("*")
     if args.include_rows == []:
-        args.include_rows = range(len(csv_rows))
+        args.include_rows = list_offset(range(len(csv_rows)), 1)
 
     # Gather keywords in TTG file
     if args.ttg_template is not None:
@@ -230,20 +228,23 @@ def main():
         unicode_keywords = {index: convert_from_ttg_text(raw_string) for index,
                             raw_string in ttg_keywords.items()}
 
-        print "Found %s keywords in the TTG template:" % len(unicode_keywords)
+        print "Found %s keywords in %s:" % (len(unicode_keywords),
+                                                args.ttg_template)
         print ", ".join([keyword for line_number, keyword in unicode_keywords.iteritems()])
 
-    print "Found %s rows in the CSV file." % len(csv_rows)
+    print "Found %s rows in %s" % (len(csv_rows), args.csv_file)
 
     # Assemble output TTG filepaths
     ttg_results = []
 
     for row_number, row in enumerate(csv_rows):
+        # Check against exclude-rows & include-rows arguments
         if row_number in list_offset(args.exclude_rows, -1):
             print " ".join(["Skipping row", str(row_number + 1)])
             continue
         if not row_number in list_offset(args.include_rows, -1):
             print " ".join(["Skipping row", str(row_number +1)])
+            continue 
         else:
             row_tidy = [tidy_text(item) for item in row]
             row_tidy_dict = {keyword: entry for keyword, entry
