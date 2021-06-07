@@ -208,11 +208,20 @@ def main():
                         default=False,
                         action="store_true",
                         help="""skip output of HTML""")
+    
+    # Gather Args 
+    args = parser.parse_args()
+    
+    # Sort out CSV
+    csv_rows = read_unicode_csv_file(args.csv_file)
 
+    # Modify Args
     args = parser.parse_args()
 
     if args.include == []:
         args.include.append("*")
+    if args.include_rows == []:
+        args.include_rows = range(len(csv_rows))
 
     # Gather keywords in TTG file
     if args.ttg_template is not None:
@@ -224,8 +233,6 @@ def main():
         print "Found %s keywords in the TTG template:" % len(unicode_keywords)
         print ", ".join([keyword for line_number, keyword in unicode_keywords.iteritems()])
 
-    # Sort out CSV
-    csv_rows = read_unicode_csv_file(args.csv_file)
     print "Found %s rows in the CSV file." % len(csv_rows)
 
     # Assemble output TTG filepaths
@@ -235,6 +242,8 @@ def main():
         if row_number in list_offset(args.exclude_rows, -1):
             print " ".join(["Skipping row", str(row_number + 1)])
             continue
+        if not row_number in list_offset(args.include_rows, -1):
+            print " ".join(["Skipping row", str(row_number +1)])
         else:
             row_tidy = [tidy_text(item) for item in row]
             row_tidy_dict = {keyword: entry for keyword, entry
