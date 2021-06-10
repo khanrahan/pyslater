@@ -195,7 +195,12 @@ def main():
                                     metavar="NUMBERS",
                                     type=validate_exclude_rows,
                                     help="""row numbers to include in CSV""")
-
+    
+    parser.add_argument("--header-row",
+                        default = 1,
+                        metavar="NUMBER",
+                        type=int,
+                        help="row number of the column headers.  default is 1.")
     parser.add_argument("-o", "--output",
                         default=os.path.join(os.getcwd(), "{5}_{6}_{4}"),
                         help="template for output file names""",
@@ -273,7 +278,7 @@ def main():
                 # Assemble dict using header row for keys and row entries
                 # for the replacements
                 line_replacements = {keyword: entry for keyword, entry in
-                                     zip(csv_rows[0], csv_rows[row_number])}
+                                     zip(csv_rows[args.header_row - 1], csv_rows[row_number])}
 
                 if args.dry_run is False:
                     #Make output path if necessary
