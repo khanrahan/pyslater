@@ -4,6 +4,7 @@
 Generates .ttg files for Autodesk Flame using data from a CSV file.
 """
 
+from __future__ import print_function # ready for upgrade to python3
 import argparse
 import csv
 import errno
@@ -50,7 +51,7 @@ def convert_from_ttg_text(decimal_string):
     """Returns unicode standard string minus the "Text" at the beginning
    and the % / 37 keyword wrappers"""
 
-    return "".join(unichr(int(character)) for character in decimal_string.split()[2:-1])
+    return "".join(chr(int(character)) for character in decimal_string.split()[2:-1])
 
 
 def convert_to_ttg_text(string):
@@ -195,9 +196,9 @@ def main():
                                     metavar="NUMBERS",
                                     type=validate_exclude_rows,
                                     help="""row numbers to include in CSV""")
-    
+
     parser.add_argument("--header-row",
-                        default = 1,
+                        default=1,
                         metavar="NUMBER",
                         type=int,
                         help="row number of the column headers.  default is 1.")
@@ -213,10 +214,10 @@ def main():
                         default=False,
                         action="store_true",
                         help="""skip output of HTML""")
-    
-    # Gather Args 
+
+    # Gather Args
     args = parser.parse_args()
-    
+
     # Sort out CSV
     csv_rows = read_unicode_csv_file(args.csv_file)
 
@@ -224,20 +225,20 @@ def main():
     if args.include == []:
         args.include.append("*")
     if args.include_rows == []:
-        args.include_rows = list_offset(range(len(csv_rows)), 1)
+        args.include_rows = list_offset(list(range(len(csv_rows))), 1)
 
     # Gather keywords in TTG file
     if args.ttg_template is not None:
         ttg_file_list = read_ttg_file(args.ttg_template)
         ttg_keywords = find_ttg_keywords(ttg_file_list)
         unicode_keywords = {index: convert_from_ttg_text(raw_string) for index,
-                            raw_string in ttg_keywords.items()}
+                            raw_string in list(ttg_keywords.items())}
 
-        print "Found %s keywords in %s:" % (len(unicode_keywords),
-                                                args.ttg_template)
-        print ", ".join([keyword for line_number, keyword in unicode_keywords.iteritems()])
+        print("Found %s keywords in %s:" % (len(unicode_keywords),
+                                            args.ttg_template))
+        print(", ".join([keyword for line_number, keyword in list(unicode_keywords.items())]))
 
-    print "Found %s rows in %s" % (len(csv_rows), args.csv_file)
+    print("Found %s rows in %s" % (len(csv_rows), args.csv_file))
 
     # Assemble output TTG filepaths
     ttg_results = []
@@ -245,11 +246,11 @@ def main():
     for row_number, row in enumerate(csv_rows):
         # Check against exclude-rows & include-rows arguments
         if row_number in list_offset(args.exclude_rows, -1):
-            print " ".join(["Skipping row", str(row_number + 1)])
+            print(" ".join(["Skipping row", str(row_number + 1)]))
             continue
         if not row_number in list_offset(args.include_rows, -1):
-            print " ".join(["Skipping row", str(row_number +1)])
-            continue 
+            print(" ".join(["Skipping row", str(row_number +1)]))
+            continue
         else:
             row_tidy = [tidy_text(item) for item in row]
             row_tidy_dict = {keyword: entry for keyword, entry
@@ -259,21 +260,21 @@ def main():
 
             # Check output filename against exclude argument
             if True in [fnmatch.fnmatch(filepath, arg) for arg in args.exclude]:
-                print " ".join(["Skipping", filename_no_ext(filepath)])
+                print(" ".join(["Skipping", filename_no_ext(filepath)]))
                 continue
 
             # Check output filename against include argument
             if True in [fnmatch.fnmatch(filepath, arg) for arg in args.include]:
-                print " ".join(["Proceeding with", filename_no_ext(filepath)])
+                print(" ".join(["Proceeding with", filename_no_ext(filepath)]))
             else:
-                print " ".join(["Skipping", filename_no_ext(filepath)])
+                print(" ".join(["Skipping", filename_no_ext(filepath)]))
                 continue
 
             ttg_results.append(filepath)
 
             # Start writing out TTGs
             if args.ttg_template is not None:
-                print "".join(["Writing out ", filepath])
+                print("".join(["Writing out ", filepath]))
 
                 # Assemble dict using header row for keys and row entries
                 # for the replacements
@@ -286,13 +287,13 @@ def main():
 
                     with open(filepath, "w") as ttg:
                         for line_number, text in enumerate(ttg_file_list, 1):
-                            if line_number + 1 in unicode_keywords.keys():
+                            if line_number + 1 in list(unicode_keywords.keys()):
                                 new_text = line_replacements[unicode_keywords[line_number
                                                                               + 1]]
                                 ttg.write("TextLength " +
                                           str(len(convert_to_ttg_text(new_text).split())) +
                                           "\n")
-                            elif line_number in unicode_keywords.keys():
+                            elif line_number in list(unicode_keywords.keys()):
                                 new_text = line_replacements[unicode_keywords[line_number]]
                                 ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
                             else:
@@ -304,14 +305,14 @@ def main():
                                         "copy_paster.html")
         ttg_filenames = [filename_no_ext(i) for i in ttg_results]
 
-        print " ".join(["Writing out", html_destination])
+        print(" ".join(["Writing out", html_destination]))
 
         if args.dry_run is False:
             makedirs(html_destination)
             generate_html_page(template_path, html_destination, 40,
                                ttg_filenames)
 
-    print "Done!"
+    print("Done!")
 
 
 if __name__ == "__main__":
