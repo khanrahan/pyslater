@@ -167,7 +167,9 @@ def create_parser():
     """Assemble parser of command line args."""
 
     parser = argparse.ArgumentParser(description="""generates .ttg files using a
-        template TTG file and CSV full of data to fill in fields""")
+        template TTG file and CSV full of data to fill in fields""",
+                                     formatter_class=lambda prog:
+                                     argparse.HelpFormatter(prog, max_help_position=40))
     parser.add_argument("csv_file", help="""path of the CSV file""")
     parser.add_argument("ttg_template",
                         nargs="?",
