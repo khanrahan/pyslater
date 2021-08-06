@@ -163,8 +163,8 @@ def list_offset(list_of_integers, offset):
     return [x + offset for x in list_of_integers]
 
 
-def main():
-    """Script that is run when called from the command line."""
+def create_parser():
+    """Assemble parser of command line args."""
 
     parser = argparse.ArgumentParser(description="""generates .ttg files using a
         template TTG file and CSV full of data to fill in fields""")
@@ -215,7 +215,14 @@ def main():
                         action="store_true",
                         help="""skip output of HTML""")
 
+    return parser
+
+
+def main():
+    """Script that is run when called from the command line."""
+
     # Gather Args
+    parser = create_parser()
     args = parser.parse_args()
 
     # Sort out CSV
