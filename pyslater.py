@@ -101,7 +101,9 @@ def makedirs(filepath):
     try:
         os.makedirs(dirpath)
     except OSError as ex:
-        if ex.errno == errno.EEXIST:
+        if ex.errno == errno.ENOENT: #empty filepath
+            pass
+        elif ex.errno == errno.EEXIST:
             pass
         else:
             raise
