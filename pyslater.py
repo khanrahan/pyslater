@@ -4,6 +4,7 @@
 Generates .ttg files for Autodesk Flame using data from a CSV file.
 """
 
+from __future__ import input # eady for upgrade to python3
 from __future__ import print_function # ready for upgrade to python3
 import argparse
 import csv
@@ -201,6 +202,14 @@ def create_parser():
                                     type=validate_exclude_rows,
                                     help="""row numbers to include in CSV""")
 
+    parser.add_argument("--force-overwrite",
+                        default=False,
+                        action="store_true",
+                        help="""overwrite existing ttgs without
+                        confirmation.  same as Yes to All.""")
+    parser.add_argument("--skip-existing",
+                        default=False,
+                        help="""skip existing ttgs.  same as No to All.""")
     parser.add_argument("--header-row",
                         default=1,
                         metavar="NUMBER",
@@ -295,6 +304,20 @@ def main():
                 if args.dry_run is False:
                     #Make output path if necessary
                     makedirs(filepath)
+
+                    # check for Overwrite [y]es / n[o] / [Y]es to All / [N]o to All?
+                    if os.path.isfile(filepath):
+                        if args.force_overwrite is True:
+                            pass
+                        if args.skip_existing is True:
+                            continue
+                        else:
+                            reply = overwrite_query()
+                                if reply == "yes":
+                                    pass
+                                if reply == "no":
+                                    continue
+
 
                     with open(filepath, "w") as ttg:
                         for line_number, text in enumerate(ttg_file_list, 1):
