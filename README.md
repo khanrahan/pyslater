@@ -24,4 +24,4 @@ python pyslater.py -o "{Spot Code}_{Duration}_{Title}.ttg" sample_spreadsheet.cs
 Include only certain rows in the CSV
 ```
 python pyslater.py --include "*1x1*" -o "{Spot Code}_{Duration}_{Title}.ttg" sample_spreadsheet.csv default_template_1x1.ttg
-Influenced by this [Flameslate PHP script](https://github.com/ManChicken1911/flameslater).
+```
