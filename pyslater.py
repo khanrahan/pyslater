@@ -4,7 +4,6 @@
 Generates .ttg files for Autodesk Flame using data from a CSV file.
 """
 
-from __future__ import input # eady for upgrade to python3
 from __future__ import print_function # ready for upgrade to python3
 import argparse
 import csv
@@ -108,6 +107,24 @@ def makedirs(filepath):
             pass
         else:
             raise
+
+
+def overwrite_query(filepath):
+    """Prompt user with decision to overwrite."""
+
+    #prompt = ("%s already exists! Overwrite? "
+    #          "[y]es / [n]o / [Y]es to All / [N]o to All " % (filepath))
+    prompt = ("%s already exists! Overwrite? "
+              "[y]es / [n]o / [Y]es to All / [N]o to All " % (filepath))
+    valid_responses = ["y", "n", "Y", "N"]
+
+    while True:
+        result = raw_input(prompt)
+
+        if result in valid_responses:
+            break
+
+    return result
 
 
 def generate_html_page(html_template, new_html_filename,
@@ -264,10 +281,12 @@ def main():
     ttg_results = []
 
     for row_number, row in enumerate(csv_rows):
-        # Check against exclude-rows & include-rows arguments
+        # Check against exclude-rows
         if row_number in list_offset(args.exclude_rows, -1):
             print(" ".join(["Skipping row", str(row_number + 1)]))
             continue
+
+        # Check against include-rows arguments
         if not row_number in list_offset(args.include_rows, -1):
             print(" ".join(["Skipping row", str(row_number +1)]))
             continue
@@ -290,6 +309,26 @@ def main():
                 print(" ".join(["Skipping", filename_no_ext(filepath)]))
                 continue
 
+            # Check for Overwrite
+            if os.path.isfile(filepath):
+                print("%s already exists!" % filepath)
+                if args.force_overwrite is True:
+                    pass
+                elif args.skip_existing is True:
+                    continue
+                else:
+                    reply = overwrite_query(filepath)
+                    if reply == "y":
+                        pass
+                    if reply == "n":
+                        continue
+                    if reply == "Y":
+                        args.force_overwrite = True
+                        pass
+                    if reply == "N":
+                        args.skip_existing = True
+                        continue
+
             ttg_results.append(filepath)
 
             # Start writing out TTGs
@@ -304,20 +343,6 @@ def main():
                 if args.dry_run is False:
                     #Make output path if necessary
                     makedirs(filepath)
-
-                    # check for Overwrite [y]es / n[o] / [Y]es to All / [N]o to All?
-                    if os.path.isfile(filepath):
-                        if args.force_overwrite is True:
-                            pass
-                        if args.skip_existing is True:
-                            continue
-                        else:
-                            reply = overwrite_query()
-                                if reply == "yes":
-                                    pass
-                                if reply == "no":
-                                    continue
-
 
                     with open(filepath, "w") as ttg:
                         for line_number, text in enumerate(ttg_file_list, 1):
