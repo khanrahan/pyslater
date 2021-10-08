@@ -109,6 +109,21 @@ def makedirs(filepath):
             raise
 
 
+def overwrite_query(filepath):
+    """Prompt user with decision to overwrite."""
+
+    prompt = ("Overwrite? [y]es / [n]o / [Y]es to All / [N]o to All " )
+    valid_responses = ["y", "n", "Y", "N"]
+
+    while True:
+        result = raw_input(prompt)
+
+        if result in valid_responses:
+            break
+
+    return result
+
+
 def generate_html_page(html_template, new_html_filename,
                        line_number_to_replace, list_of_replacements):
     """Generates HTML page of filenames to copy paste."""
@@ -201,6 +216,14 @@ def create_parser():
                                     type=validate_exclude_rows,
                                     help="""row numbers to include in CSV""")
 
+    parser.add_argument("--force-overwrite",
+                        default=False,
+                        action="store_true",
+                        help="""overwrite existing ttgs without
+                        confirmation.  same as Yes to All.""")
+    parser.add_argument("--skip-existing",
+                        default=False,
+                        help="""skip existing ttgs.  same as No to All.""")
     parser.add_argument("--header-row",
                         default=1,
                         metavar="NUMBER",
@@ -255,10 +278,12 @@ def main():
     ttg_results = []
 
     for row_number, row in enumerate(csv_rows):
-        # Check against exclude-rows & include-rows arguments
+        # Check against exclude-rows
         if row_number in list_offset(args.exclude_rows, -1):
             print(" ".join(["Skipping row", str(row_number + 1)]))
             continue
+
+        # Check against include-rows arguments
         if not row_number in list_offset(args.include_rows, -1):
             print(" ".join(["Skipping row", str(row_number +1)]))
             continue
@@ -280,6 +305,27 @@ def main():
             else:
                 print(" ".join(["Skipping", filename_no_ext(filepath)]))
                 continue
+
+            # Check for overwrite
+            if os.path.isfile(filepath):
+                print("%s already exists!" % filepath)
+                if args.force_overwrite is True:
+                    pass
+                elif args.skip_existing is True:
+                    print("Skipping %s" % filepath)
+                    continue
+                else:
+                    reply = overwrite_query(filepath)
+                    if reply == "y":
+                        pass
+                    if reply == "n":
+                        print("Skipping %s" % filepath)
+                        continue
+                    if reply == "Y":
+                        args.force_overwrite = True
+                    if reply == "N":
+                        args.skip_existing = True
+                        continue
 
             ttg_results.append(filepath)
 
@@ -324,7 +370,6 @@ def main():
                                ttg_filenames)
 
     print("Done!")
-
 
 if __name__ == "__main__":
     main()
