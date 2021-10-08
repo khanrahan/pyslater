@@ -112,10 +112,7 @@ def makedirs(filepath):
 def overwrite_query(filepath):
     """Prompt user with decision to overwrite."""
 
-    #prompt = ("%s already exists! Overwrite? "
-    #          "[y]es / [n]o / [Y]es to All / [N]o to All " % (filepath))
-    prompt = ("%s already exists! Overwrite? "
-              "[y]es / [n]o / [Y]es to All / [N]o to All " % (filepath))
+    prompt = ("Overwrite? [y]es / [n]o / [Y]es to All / [N]o to All " )
     valid_responses = ["y", "n", "Y", "N"]
 
     while True:
@@ -309,22 +306,23 @@ def main():
                 print(" ".join(["Skipping", filename_no_ext(filepath)]))
                 continue
 
-            # Check for Overwrite
+            # Check for overwrite
             if os.path.isfile(filepath):
                 print("%s already exists!" % filepath)
                 if args.force_overwrite is True:
                     pass
                 elif args.skip_existing is True:
+                    print("Skipping %s" % filepath)
                     continue
                 else:
                     reply = overwrite_query(filepath)
                     if reply == "y":
                         pass
                     if reply == "n":
+                        print("Skipping %s" % filepath)
                         continue
                     if reply == "Y":
                         args.force_overwrite = True
-                        pass
                     if reply == "N":
                         args.skip_existing = True
                         continue
@@ -372,7 +370,6 @@ def main():
                                ttg_filenames)
 
     print("Done!")
-
 
 if __name__ == "__main__":
     main()
