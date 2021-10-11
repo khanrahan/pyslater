@@ -216,15 +216,17 @@ def create_parser():
                                     type=validate_exclude_rows,
                                     help="""row numbers to include in CSV""")
 
-    parser.add_argument("--force-overwrite",
+    existing_file = parser.add_mutually_exclusive_group()
+    existing_file.add_argument("--force-overwrite",
                         default=False,
                         action="store_true",
                         help="""overwrite existing ttgs without
                         confirmation.  same as Yes to All.""")
-    parser.add_argument("--skip-existing",
+    existing_file.add_argument("--skip-existing",
                         default=False,
                         action="store_true",
                         help="""skip existing ttgs.  same as No to All.""")
+
     parser.add_argument("--header-row",
                         default=1,
                         metavar="NUMBER",
