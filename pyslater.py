@@ -223,6 +223,7 @@ def create_parser():
                         confirmation.  same as Yes to All.""")
     parser.add_argument("--skip-existing",
                         default=False,
+                        action="store_true",
                         help="""skip existing ttgs.  same as No to All.""")
     parser.add_argument("--header-row",
                         default=1,
