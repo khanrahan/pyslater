@@ -219,27 +219,22 @@ def create_parser():
                                     help="""row numbers to include in CSV""")
 
     existing_file = parser.add_argument_group("existing file")
-    existing_exclusive = parser.add_mutually_exclusive_group()
+    existing_exclusive = existing_file.add_mutually_exclusive_group()
     existing_exclusive.add_argument("--force-overwrite",
                         default=False,
                         action="store_true",
-                        help="""overwrite existing ttgs without
+                        help="""overwrite existing TTGs without
                         confirmation.  same as Yes to All.""")
     existing_exclusive.add_argument("--skip-existing",
                         default=False,
                         action="store_true",
-                        help="""skip existing ttgs.  same as No to All.""")
+                        help="""skip existing TTGs.  same as No to All.""")
 
     parser.add_argument("--header-row",
                         default=1,
                         metavar="NUMBER",
                         type=int,
                         help="row number of the column headers.  default is 1.")
-    parser.add_argument("-o", "--output",
-                        default=os.path.join(os.getcwd(), "{5}_{6}_{4}"),
-                        help="template for output file names""",
-                        metavar="TEMPLATE",
-                        type=validate_output_template)
     parser.add_argument("-n", "--dry-run",
                         action="store_true",
                         help="""perform trial run with no files written""")
@@ -247,7 +242,11 @@ def create_parser():
                         default=False,
                         action="store_true",
                         help="""skip output of HTML""")
-
+    parser.add_argument("-o", "--output",
+                        default=os.path.join(os.getcwd(), "{5}_{6}_{4}"),
+                        help="template for output file names""",
+                        metavar="TEMPLATE",
+                        type=validate_output_template)
     return parser
 
 
