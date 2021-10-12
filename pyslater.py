@@ -109,10 +109,10 @@ def makedirs(filepath):
             raise
 
 
-def overwrite_query(filepath):
+def overwrite_query():
     """Prompt user with decision to overwrite."""
 
-    prompt = ("Overwrite? [y]es / [n]o / [Y]es to All / [N]o to All " )
+    prompt = ("Overwrite? [y]es / [n]o / [Y]es to All / [N]o to All ")
     valid_responses = ["y", "n", "Y", "N"]
 
     while True:
@@ -127,6 +127,7 @@ def overwrite_query(filepath):
 def generate_html_page(html_template, new_html_filename,
                        line_number_to_replace, list_of_replacements):
     """Generates HTML page of filenames to copy paste."""
+
     html_line = """  <button
     data-clipboard-text=\"master_name_goes_here\">master_name_goes_here</button>"""
 
@@ -221,14 +222,14 @@ def create_parser():
     existing_file = parser.add_argument_group("existing file")
     existing_exclusive = existing_file.add_mutually_exclusive_group()
     existing_exclusive.add_argument("--force-overwrite",
-                        default=False,
-                        action="store_true",
-                        help="""overwrite existing TTGs without
-                        confirmation.  same as Yes to All.""")
+                                    default=False,
+                                    action="store_true",
+                                    help="""overwrite existing TTGs without
+                                    confirmation.  same as Yes to All.""")
     existing_exclusive.add_argument("--skip-existing",
-                        default=False,
-                        action="store_true",
-                        help="""skip existing TTGs.  same as No to All.""")
+                                    default=False,
+                                    action="store_true",
+                                    help="""skip existing TTGs.  same as No to All.""")
 
     parser.add_argument("--header-row",
                         default=1,
@@ -320,7 +321,7 @@ def main():
                     print("Skipping %s" % filepath)
                     continue
                 else:
-                    reply = overwrite_query(filepath)
+                    reply = overwrite_query()
                     if reply == "y":
                         pass
                     if reply == "n":
