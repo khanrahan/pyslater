@@ -238,7 +238,7 @@ def create_parser():
     parser.add_argument("-n", "--dry-run",
                         action="store_true",
                         help="""perform trial run with no files written""")
-    parser.add_argument("--no-html-output",
+    parser.add_argument("--no-html",
                         default=False,
                         action="store_true",
                         help="""skip output of HTML""")
