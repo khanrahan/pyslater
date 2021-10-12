@@ -192,7 +192,9 @@ def create_parser():
                         nargs="?",
                         help="""path of the template TTG file""")
 
-    filter_rows = parser.add_mutually_exclusive_group()
+    filtering = parser.add_argument_group("row filtering")
+
+    filter_rows = filtering.add_mutually_exclusive_group()
     filter_rows.add_argument("--exclude",
                              action="append",
                              default=[],
@@ -204,7 +206,7 @@ def create_parser():
                              metavar="PATTERN",
                              help="""include lines from CSV matching PATTERN""")
 
-    filter_row_numbers = parser.add_mutually_exclusive_group()
+    filter_row_numbers = filtering.add_mutually_exclusive_group()
     filter_row_numbers.add_argument("--exclude-rows",
                                     default=[1],
                                     metavar="NUMBERS",
