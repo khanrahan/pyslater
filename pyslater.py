@@ -379,7 +379,7 @@ def main():
                     #            ttg.write(text + "\n")
                     write_ttg(filepath, ttg_file_list, unicode_keywords)
 
-    if args.no_html_output is False:
+    if args.no_html is False:
         template_path = os.path.join(script_path(), "template.html")
         html_destination = os.path.join(common_path(ttg_results),
                                         "copy_paster.html")
