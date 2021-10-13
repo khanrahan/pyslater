@@ -250,6 +250,22 @@ def create_parser():
                         type=validate_output_template)
     return parser
 
+def write_ttg(filepath, ttg_file_list, unicode_keywords):
+    """ """
+
+    with open(filepath, "w") as ttg:
+        for line_number, text in enumerate(ttg_file_list, 1):
+            if line_number + 1 in list(unicode_keywords.keys()):
+                new_text = line_replacements[unicode_keywords[line_number
+                                                              + 1]]
+                ttg.write("TextLength " +
+                          str(len(convert_to_ttg_text(new_text).split())) +
+                          "\n")
+            elif line_number in list(unicode_keywords.keys()):
+                new_text = line_replacements[unicode_keywords[line_number]]
+                ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
+            else:
+                ttg.write(text + "\n")
 
 def main():
     """Script that is run when called from the command line."""
@@ -348,19 +364,20 @@ def main():
                     #Make output path if necessary
                     makedirs(filepath)
 
-                    with open(filepath, "w") as ttg:
-                        for line_number, text in enumerate(ttg_file_list, 1):
-                            if line_number + 1 in list(unicode_keywords.keys()):
-                                new_text = line_replacements[unicode_keywords[line_number
-                                                                              + 1]]
-                                ttg.write("TextLength " +
-                                          str(len(convert_to_ttg_text(new_text).split())) +
-                                          "\n")
-                            elif line_number in list(unicode_keywords.keys()):
-                                new_text = line_replacements[unicode_keywords[line_number]]
-                                ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
-                            else:
-                                ttg.write(text + "\n")
+                    #with open(filepath, "w") as ttg:
+                    #    for line_number, text in enumerate(ttg_file_list, 1):
+                    #        if line_number + 1 in list(unicode_keywords.keys()):
+                    #            new_text = line_replacements[unicode_keywords[line_number
+                    #                                                          + 1]]
+                    #            ttg.write("TextLength " +
+                    #                      str(len(convert_to_ttg_text(new_text).split())) +
+                    #                      "\n")
+                    #        elif line_number in list(unicode_keywords.keys()):
+                    #            new_text = line_replacements[unicode_keywords[line_number]]
+                    #            ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
+                    #        else:
+                    #            ttg.write(text + "\n")
+                    write_ttg(filepath, ttg_file_list, unicode_keywords)
 
     if args.no_html_output is False:
         template_path = os.path.join(script_path(), "template.html")
