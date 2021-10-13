@@ -250,8 +250,15 @@ def create_parser():
                         type=validate_output_template)
     return parser
 
-def write_ttg(filepath, ttg_file_list, unicode_keywords):
-    """ """
+
+def write_ttg(filepath, line_replacements, ttg_file_list, unicode_keywords):
+    """
+    Writes out a ttg.
+    filepath = full destination path and filename
+    ttg_file_list = the template ttg stored a list of lines
+    unicode_keywords = dictionary of the keywords in the template and their
+    line number
+    """
 
     with open(filepath, "w") as ttg:
         for line_number, text in enumerate(ttg_file_list, 1):
@@ -266,6 +273,7 @@ def write_ttg(filepath, ttg_file_list, unicode_keywords):
                 ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
             else:
                 ttg.write(text + "\n")
+
 
 def main():
     """Script that is run when called from the command line."""
@@ -377,7 +385,7 @@ def main():
                     #            ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
                     #        else:
                     #            ttg.write(text + "\n")
-                    write_ttg(filepath, ttg_file_list, unicode_keywords)
+                    write_ttg(filepath, line_replacements, ttg_file_list, unicode_keywords)
 
     if args.no_html is False:
         template_path = os.path.join(script_path(), "template.html")
