@@ -92,21 +92,22 @@ def tidy_text(text):
     return tidy
 
 
-def makedirs(filepath):
+def makedirs(filepath, dry_run):
     """Make sure out the directories exist for given filepath
     Copied from https://stackoverflow.com/a/600612/119527"""
 
     dirpath = os.path.dirname(filepath)
 
-    try:
-        os.makedirs(dirpath)
-    except OSError as ex:
-        if ex.errno == errno.ENOENT: #empty filepath
-            pass
-        elif ex.errno == errno.EEXIST:
-            pass
-        else:
-            raise
+    if dry_run is not True:
+        try:
+            os.makedirs(dirpath)
+        except OSError as ex:
+            if ex.errno == errno.ENOENT: #empty filepath
+                pass
+            elif ex.errno == errno.EEXIST:
+                pass
+            else:
+                raise
 
 
 def overwrite_query():
@@ -125,21 +126,22 @@ def overwrite_query():
 
 
 def generate_html_page(html_template, new_html_filename,
-                       line_number_to_replace, list_of_replacements):
+                       line_number_to_replace, list_of_replacements, dry_run):
     """Generates HTML page of filenames to copy paste."""
 
     html_line = """  <button
     data-clipboard-text=\"master_name_goes_here\">master_name_goes_here</button>"""
 
-    with open(html_template, 'rU') as source_file:
-        with open(new_html_filename, 'w') as destination_file:
-            for line_number, line in enumerate(source_file, 1):
-                if line_number == line_number_to_replace:
-                    for entry in list_of_replacements:
-                        destination_file.write(html_line.replace("master_name_goes_here",
-                                                                 entry) + "\n")
-                else:
-                    destination_file.write(line)
+    if dry_run is not True:
+        with open(html_template, 'rU') as source_file:
+            with open(new_html_filename, 'w') as destination_file:
+                for line_number, line in enumerate(source_file, 1):
+                    if line_number == line_number_to_replace:
+                        for entry in list_of_replacements:
+                            destination_file.write(html_line.replace("master_name_goes_here",
+                                                                     entry) + "\n")
+                    else:
+                        destination_file.write(line)
 
 
 def script_path():
@@ -237,6 +239,7 @@ def create_parser():
                         type=int,
                         help="row number of the column headers.  default is 1.")
     parser.add_argument("-n", "--dry-run",
+                        default=False,
                         action="store_true",
                         help="""perform trial run with no files written""")
     parser.add_argument("--no-html",
@@ -251,7 +254,8 @@ def create_parser():
     return parser
 
 
-def write_ttg(filepath, line_replacements, ttg_file_list, unicode_keywords):
+def write_ttg(filepath, line_replacements, ttg_file_list, unicode_keywords,
+              dry_run):
     """
     Writes out a ttg.
     filepath = full destination path and filename
@@ -262,19 +266,20 @@ def write_ttg(filepath, line_replacements, ttg_file_list, unicode_keywords):
     line number
     """
 
-    with open(filepath, "w") as ttg:
-        for line_number, text in enumerate(ttg_file_list, 1):
-            if line_number + 1 in list(unicode_keywords.keys()):
-                new_text = line_replacements[unicode_keywords[line_number
-                                                              + 1]]
-                ttg.write("TextLength " +
-                          str(len(convert_to_ttg_text(new_text).split())) +
-                          "\n")
-            elif line_number in list(unicode_keywords.keys()):
-                new_text = line_replacements[unicode_keywords[line_number]]
-                ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
-            else:
-                ttg.write(text + "\n")
+    if dry_run is not True:
+        with open(filepath, "w") as ttg:
+            for line_number, text in enumerate(ttg_file_list, 1):
+                if line_number + 1 in list(unicode_keywords.keys()):
+                    new_text = line_replacements[unicode_keywords[line_number
+                                                                  + 1]]
+                    ttg.write("TextLength " +
+                              str(len(convert_to_ttg_text(new_text).split())) +
+                              "\n")
+                elif line_number in list(unicode_keywords.keys()):
+                    new_text = line_replacements[unicode_keywords[line_number]]
+                    ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
+                else:
+                    ttg.write(text + "\n")
 
 
 def main():
@@ -339,25 +344,28 @@ def main():
         print(" ".join(["Proceeding with", filename_no_ext(filepath)]))
 
         # Check for overwrite
-        if os.path.isfile(filepath):
+        exists = os.path.isfile(filepath)
+
+        if exists:
             print("%s already exists!" % filepath)
-            if args.force_overwrite is True:
+
+        if exists and args.force_overwrite is True:
+            pass
+        elif exists and args.skip_existing is True:
+            print("Skipping %s" % filepath)
+            continue
+        else:
+            reply = overwrite_query()
+            if reply == "y":
                 pass
-            elif args.skip_existing is True:
+            if reply == "n":
                 print("Skipping %s" % filepath)
                 continue
-            else:
-                reply = overwrite_query()
-                if reply == "y":
-                    pass
-                if reply == "n":
-                    print("Skipping %s" % filepath)
-                    continue
-                if reply == "Y":
-                    args.force_overwrite = True
-                if reply == "N":
-                    args.skip_existing = True
-                    continue
+            if reply == "Y":
+                args.force_overwrite = True
+            if reply == "N":
+                args.skip_existing = True
+                continue
 
         ttg_results.append(filepath)
 
@@ -370,9 +378,9 @@ def main():
             line_replacements = {keyword: entry for keyword, entry in
                                  zip(csv_rows[args.header_row - 1], csv_rows[row_number])}
 
-            if args.dry_run is False:
-                makedirs(filepath) #Make output path if necessary
-                write_ttg(filepath, line_replacements, ttg_file_list, unicode_keywords)
+            makedirs(filepath, args.dry_run) #Make output path if necessary
+            write_ttg(filepath, line_replacements, ttg_file_list,
+                      unicode_keywords, args.dry_run)
 
     if args.no_html is False:
         template_path = os.path.join(script_path(), "template.html")
@@ -382,10 +390,9 @@ def main():
 
         print(" ".join(["Writing out", html_destination]))
 
-        if args.dry_run is False:
-            makedirs(html_destination)
-            generate_html_page(template_path, html_destination, 40,
-                               ttg_filenames)
+        makedirs(html_destination, args.dry_run)
+        generate_html_page(template_path, html_destination, 40, ttg_filenames,
+                           args.dry_run)
 
     print("Done!")
 
