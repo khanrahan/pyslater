@@ -237,6 +237,7 @@ def create_parser():
                         type=int,
                         help="row number of the column headers.  default is 1.")
     parser.add_argument("-n", "--dry-run",
+                        default=False,
                         action="store_true",
                         help="""perform trial run with no files written""")
     parser.add_argument("--no-html",
@@ -249,6 +250,32 @@ def create_parser():
                         metavar="TEMPLATE",
                         type=validate_output_template)
     return parser
+
+
+def write_ttg(filepath, line_replacements, ttg_file_list, unicode_keywords):
+    """
+    Writes out a ttg.
+    filepath = full destination path and filename
+    line_replacements = dictionary of replacements and their destination line
+    numbers
+    ttg_file_list = the template ttg stored a list of lines
+    unicode_keywords = dictionary of the keywords in the template and their
+    line number
+    """
+
+    with open(filepath, "w") as ttg:
+        for line_number, text in enumerate(ttg_file_list, 1):
+            if line_number + 1 in list(unicode_keywords.keys()):
+                new_text = line_replacements[unicode_keywords[line_number
+                                                              + 1]]
+                ttg.write("TextLength " +
+                          str(len(convert_to_ttg_text(new_text).split())) +
+                          "\n")
+            elif line_number in list(unicode_keywords.keys()):
+                new_text = line_replacements[unicode_keywords[line_number]]
+                ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
+            else:
+                ttg.write(text + "\n")
 
 
 def main():
@@ -276,7 +303,7 @@ def main():
 
         print("Found %s keywords in %s:" % (len(unicode_keywords),
                                             args.ttg_template))
-        print(", ".join([keyword for line_number, keyword in list(unicode_keywords.items())]))
+        print(", ".join([keyword for _, keyword in list(unicode_keywords.items())]))
 
     print("Found %s rows in %s" % (len(csv_rows), args.csv_file))
 
@@ -293,76 +320,68 @@ def main():
         if not row_number in list_offset(args.include_rows, -1):
             print(" ".join(["Skipping row", str(row_number +1)]))
             continue
+
+        row_tidy = [tidy_text(item) for item in row]
+        row_tidy_dict = {keyword: entry for keyword, entry
+                         in zip(csv_rows[0], row_tidy)}
+
+        filepath = expand_path(args.output).format(* row_tidy, ** row_tidy_dict)
+
+        # Check output filename against exclude argument
+        if True in [fnmatch.fnmatch(filepath, arg) for arg in args.exclude]:
+            print(" ".join(["Skipping", filename_no_ext(filepath)]))
+            continue
+
+        # Check output filename against include argument
+        if False in [fnmatch.fnmatch(filepath, arg) for arg in args.include]:
+            print(" ".join(["Skipping", filename_no_ext(filepath)]))
+            continue
+
+        print(" ".join(["Proceeding with", filename_no_ext(filepath)]))
+
+        # Check for overwrite
+        exists = os.path.isfile(filepath)
+
+        if exists:
+            print("%s already exists!" % filepath)
+
+        if exists and args.force_overwrite is True:
+            pass
+        elif exists and args.skip_existing is True:
+            print("Skipping %s" % filepath)
+            continue
         else:
-            row_tidy = [tidy_text(item) for item in row]
-            row_tidy_dict = {keyword: entry for keyword, entry
-                             in zip(csv_rows[0], row_tidy)}
+            reply = overwrite_query()
 
-            filepath = expand_path(args.output).format(* row_tidy, ** row_tidy_dict)
+        # Overwrite responses
+        if reply and reply == "y":
+            pass
+        if reply and reply == "n":
+            print("Skipping %s" % filepath)
+            continue
+        if reply and reply == "Y":
+            args.force_overwrite = True
+        if reply and reply == "N":
+            args.skip_existing = True
+            continue
 
-            # Check output filename against exclude argument
-            if True in [fnmatch.fnmatch(filepath, arg) for arg in args.exclude]:
-                print(" ".join(["Skipping", filename_no_ext(filepath)]))
-                continue
+        ttg_results.append(filepath)
 
-            # Check output filename against include argument
-            if True in [fnmatch.fnmatch(filepath, arg) for arg in args.include]:
-                print(" ".join(["Proceeding with", filename_no_ext(filepath)]))
-            else:
-                print(" ".join(["Skipping", filename_no_ext(filepath)]))
-                continue
+        # Start writing out TTGs
+        if args.ttg_template is not None:
+            print("".join(["Writing out ", filepath]))
 
-            # Check for overwrite
-            if os.path.isfile(filepath):
-                print("%s already exists!" % filepath)
-                if args.force_overwrite is True:
-                    pass
-                elif args.skip_existing is True:
-                    print("Skipping %s" % filepath)
-                    continue
-                else:
-                    reply = overwrite_query()
-                    if reply == "y":
-                        pass
-                    if reply == "n":
-                        print("Skipping %s" % filepath)
-                        continue
-                    if reply == "Y":
-                        args.force_overwrite = True
-                    if reply == "N":
-                        args.skip_existing = True
-                        continue
+            # Assemble dict using header row for keys and row entries
+            # for the replacements
+            line_replacements = {keyword: entry for keyword, entry in
+                                 zip(csv_rows[args.header_row - 1], csv_rows[row_number])}
 
-            ttg_results.append(filepath)
+        if args.ttg_template is not None and not args.dry_run:
+            makedirs(filepath) #Make output path if necessary
+            write_ttg(filepath, line_replacements, ttg_file_list,
+                      unicode_keywords)
 
-            # Start writing out TTGs
-            if args.ttg_template is not None:
-                print("".join(["Writing out ", filepath]))
-
-                # Assemble dict using header row for keys and row entries
-                # for the replacements
-                line_replacements = {keyword: entry for keyword, entry in
-                                     zip(csv_rows[args.header_row - 1], csv_rows[row_number])}
-
-                if args.dry_run is False:
-                    #Make output path if necessary
-                    makedirs(filepath)
-
-                    with open(filepath, "w") as ttg:
-                        for line_number, text in enumerate(ttg_file_list, 1):
-                            if line_number + 1 in list(unicode_keywords.keys()):
-                                new_text = line_replacements[unicode_keywords[line_number
-                                                                              + 1]]
-                                ttg.write("TextLength " +
-                                          str(len(convert_to_ttg_text(new_text).split())) +
-                                          "\n")
-                            elif line_number in list(unicode_keywords.keys()):
-                                new_text = line_replacements[unicode_keywords[line_number]]
-                                ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
-                            else:
-                                ttg.write(text + "\n")
-
-    if args.no_html is False:
+    if not args.no_html:
         template_path = os.path.join(script_path(), "template.html")
         html_destination = os.path.join(common_path(ttg_results),
                                         "copy_paster.html")
@@ -370,10 +389,9 @@ def main():
 
         print(" ".join(["Writing out", html_destination]))
 
-        if args.dry_run is False:
-            makedirs(html_destination)
-            generate_html_page(template_path, html_destination, 40,
-                               ttg_filenames)
+    if not args.no_html and not args.dry_run:
+        makedirs(html_destination)
+        generate_html_page(template_path, html_destination, 40, ttg_filenames)
 
     print("Done!")
 
