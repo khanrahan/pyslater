@@ -92,22 +92,21 @@ def tidy_text(text):
     return tidy
 
 
-def makedirs(filepath, dry_run):
+def makedirs(filepath):
     """Make sure out the directories exist for given filepath
     Copied from https://stackoverflow.com/a/600612/119527"""
 
     dirpath = os.path.dirname(filepath)
 
-    if dry_run is not True:
-        try:
-            os.makedirs(dirpath)
-        except OSError as ex:
-            if ex.errno == errno.ENOENT: #empty filepath
-                pass
-            elif ex.errno == errno.EEXIST:
-                pass
-            else:
-                raise
+    try:
+        os.makedirs(dirpath)
+    except OSError as ex:
+        if ex.errno == errno.ENOENT: #empty filepath
+            pass
+        elif ex.errno == errno.EEXIST:
+            pass
+        else:
+            raise
 
 
 def overwrite_query():
@@ -126,22 +125,21 @@ def overwrite_query():
 
 
 def generate_html_page(html_template, new_html_filename,
-                       line_number_to_replace, list_of_replacements, dry_run):
+                       line_number_to_replace, list_of_replacements):
     """Generates HTML page of filenames to copy paste."""
 
     html_line = """  <button
     data-clipboard-text=\"master_name_goes_here\">master_name_goes_here</button>"""
 
-    if dry_run is not True:
-        with open(html_template, 'rU') as source_file:
-            with open(new_html_filename, 'w') as destination_file:
-                for line_number, line in enumerate(source_file, 1):
-                    if line_number == line_number_to_replace:
-                        for entry in list_of_replacements:
-                            destination_file.write(html_line.replace("master_name_goes_here",
-                                                                     entry) + "\n")
-                    else:
-                        destination_file.write(line)
+    with open(html_template, 'rU') as source_file:
+        with open(new_html_filename, 'w') as destination_file:
+            for line_number, line in enumerate(source_file, 1):
+                if line_number == line_number_to_replace:
+                    for entry in list_of_replacements:
+                        destination_file.write(html_line.replace("master_name_goes_here",
+                                                                 entry) + "\n")
+                else:
+                    destination_file.write(line)
 
 
 def script_path():
@@ -254,8 +252,7 @@ def create_parser():
     return parser
 
 
-def write_ttg(filepath, line_replacements, ttg_file_list, unicode_keywords,
-              dry_run):
+def write_ttg(filepath, line_replacements, ttg_file_list, unicode_keywords):
     """
     Writes out a ttg.
     filepath = full destination path and filename
@@ -266,20 +263,19 @@ def write_ttg(filepath, line_replacements, ttg_file_list, unicode_keywords,
     line number
     """
 
-    if dry_run is not True:
-        with open(filepath, "w") as ttg:
-            for line_number, text in enumerate(ttg_file_list, 1):
-                if line_number + 1 in list(unicode_keywords.keys()):
-                    new_text = line_replacements[unicode_keywords[line_number
-                                                                  + 1]]
-                    ttg.write("TextLength " +
-                              str(len(convert_to_ttg_text(new_text).split())) +
-                              "\n")
-                elif line_number in list(unicode_keywords.keys()):
-                    new_text = line_replacements[unicode_keywords[line_number]]
-                    ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
-                else:
-                    ttg.write(text + "\n")
+    with open(filepath, "w") as ttg:
+        for line_number, text in enumerate(ttg_file_list, 1):
+            if line_number + 1 in list(unicode_keywords.keys()):
+                new_text = line_replacements[unicode_keywords[line_number
+                                                              + 1]]
+                ttg.write("TextLength " +
+                          str(len(convert_to_ttg_text(new_text).split())) +
+                          "\n")
+            elif line_number in list(unicode_keywords.keys()):
+                new_text = line_replacements[unicode_keywords[line_number]]
+                ttg.write("Text " + convert_to_ttg_text(new_text) + "\n")
+            else:
+                ttg.write(text + "\n")
 
 
 def main():
@@ -356,16 +352,18 @@ def main():
             continue
         else:
             reply = overwrite_query()
-            if reply == "y":
-                pass
-            if reply == "n":
-                print("Skipping %s" % filepath)
-                continue
-            if reply == "Y":
-                args.force_overwrite = True
-            if reply == "N":
-                args.skip_existing = True
-                continue
+
+        # Overwrite responses
+        if reply and reply == "y":
+            pass
+        if reply and reply == "n":
+            print("Skipping %s" % filepath)
+            continue
+        if reply and reply == "Y":
+            args.force_overwrite = True
+        if reply and reply == "N":
+            args.skip_existing = True
+            continue
 
         ttg_results.append(filepath)
 
@@ -378,11 +376,12 @@ def main():
             line_replacements = {keyword: entry for keyword, entry in
                                  zip(csv_rows[args.header_row - 1], csv_rows[row_number])}
 
-            makedirs(filepath, args.dry_run) #Make output path if necessary
+        if args.ttg_template is not None and not args.dry_run:
+            makedirs(filepath) #Make output path if necessary
             write_ttg(filepath, line_replacements, ttg_file_list,
-                      unicode_keywords, args.dry_run)
+                      unicode_keywords)
 
-    if args.no_html is False:
+    if not args.no_html:
         template_path = os.path.join(script_path(), "template.html")
         html_destination = os.path.join(common_path(ttg_results),
                                         "copy_paster.html")
@@ -390,9 +389,9 @@ def main():
 
         print(" ".join(["Writing out", html_destination]))
 
-        makedirs(html_destination, args.dry_run)
-        generate_html_page(template_path, html_destination, 40, ttg_filenames,
-                           args.dry_run)
+    if not args.no_html and not args.dry_run:
+        makedirs(html_destination)
+        generate_html_page(template_path, html_destination, 40, ttg_filenames)
 
     print("Done!")
 
