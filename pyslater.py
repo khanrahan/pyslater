@@ -353,23 +353,23 @@ def main():
 
         if exists and args.force_overwrite is True:
             pass
-        elif exists and args.skip_existing is True:
+        if exists and args.skip_existing is True:
             print("Skipping %s" % filepath)
             continue
-        else:
+        if exists and not args.force_overwrite and not args.skip_existing:
             reply = overwrite_query()
 
-        # Overwrite responses
-        if reply and reply == "y":
-            pass
-        if reply and reply == "n":
-            print("Skipping %s" % filepath)
-            continue
-        if reply and reply == "Y":
-            args.force_overwrite = True
-        if reply and reply == "N":
-            args.skip_existing = True
-            continue
+            # Overwrite responses
+            if reply and reply == "y":
+                pass
+            if reply and reply == "n":
+                print("Skipping %s" % filepath)
+                continue
+            if reply and reply == "Y":
+                args.force_overwrite = True
+            if reply and reply == "N":
+                args.skip_existing = True
+                continue
 
         ttg_results.append(filepath)
 
