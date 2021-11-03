@@ -5,6 +5,7 @@ Generates .ttg files for Autodesk Flame using data from a CSV file.
 """
 
 from __future__ import print_function # ready for upgrade to python3
+from __future__ import unicode_literals
 import argparse
 import csv
 import errno
@@ -17,12 +18,13 @@ def read_unicode_csv_file(filename):
     """Returns a tuple of list data from a csv file passed to it."""
 
     try:
-        with open(filename, 'rU') as open_file: #remove the U. use newline=
+        with open(filename, newline='') as open_file: #remove the U. use newline=
             raw_rows = csv.reader(open_file)
             unicode_rows = []
-            for utf8_row in raw_rows:
-                unicode_row = [x.decode('utf8') for x in utf8_row]
-                unicode_rows.append(unicode_row)
+            #for utf8_row in raw_rows:
+            #    unicode_row = [x.decode('utf8') for x in utf8_row]
+            #    unicode_rows.append(unicode_row)
+            unicode_rows = [row for row in raw_rows]
             return tuple(unicode_rows)
     except Exception as ex:
         raise ex
@@ -116,7 +118,10 @@ def overwrite_query():
     valid_responses = ["y", "n", "Y", "N"]
 
     while True:
-        result = raw_input(prompt)
+        try:
+            result = raw_input(prompt) #python 2.7
+        except NameError:
+            result = input(prompt)
 
         if result in valid_responses:
             break
@@ -325,6 +330,7 @@ def main():
         row_tidy_dict = {keyword: entry for keyword, entry
                          in zip(csv_rows[0], row_tidy)}
 
+        # Check output file path has all necessary enteries
         filepath = expand_path(args.output).format(* row_tidy, ** row_tidy_dict)
 
         # Check output filename against exclude argument
