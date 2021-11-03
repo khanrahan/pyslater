@@ -18,12 +18,8 @@ def read_unicode_csv_file(filename):
     """Returns a tuple of list data from a csv file passed to it."""
 
     try:
-        with open(filename, newline='') as open_file: #remove the U. use newline=
+        with open(filename, newline='') as open_file:
             raw_rows = csv.reader(open_file)
-            unicode_rows = []
-            #for utf8_row in raw_rows:
-            #    unicode_row = [x.decode('utf8') for x in utf8_row]
-            #    unicode_rows.append(unicode_row)
             unicode_rows = [row for row in raw_rows]
             return tuple(unicode_rows)
     except Exception as ex:
@@ -136,7 +132,7 @@ def generate_html_page(html_template, new_html_filename,
     html_line = """  <button
     data-clipboard-text=\"master_name_goes_here\">master_name_goes_here</button>"""
 
-    with open(html_template, 'rU') as source_file:
+    with open(html_template, newline="") as source_file:
         with open(new_html_filename, 'w') as destination_file:
             for line_number, line in enumerate(source_file, 1):
                 if line_number == line_number_to_replace:
