@@ -5,7 +5,7 @@ Generates .ttg files for Autodesk Flame using data from a CSV file.
 """
 
 from __future__ import print_function # ready for upgrade to python3
-from __future__ import unicode_literals
+from __future__ import unicode_literals # ready for upgrade to python3
 import argparse
 import csv
 import errno
@@ -18,13 +18,14 @@ def read_unicode_csv_file(filename):
     """Returns a tuple of list data from a csv file passed to it."""
 
     try:
-        with open(filename, newline='') as open_file:
-            raw_rows = csv.reader(open_file)
-            unicode_rows = [row for row in raw_rows]
-            return tuple(unicode_rows)
-    except Exception as ex:
-        raise ex
+        open_file = open(filename, newline='') #python3
+    except TypeError:
+        open_file = open(filename, 'rU') #python2.7
 
+    with open_file:
+        raw_rows = csv.reader(open_file)
+        unicode_rows = [row for row in raw_rows]
+        return tuple(unicode_rows)
 
 def read_ttg_file(filename):
     """Return contents of TTG file."""
@@ -132,8 +133,15 @@ def generate_html_page(html_template, new_html_filename,
     html_line = """  <button
     data-clipboard-text=\"master_name_goes_here\">master_name_goes_here</button>"""
 
-    with open(html_template, newline="") as source_file:
-        with open(new_html_filename, 'w') as destination_file:
+    try:
+        source_file = open(html_template, newline='') #python3
+    except TypeError:
+        source_file = open(html_template, 'rU') #python2.7
+
+    destination_file = open(new_html_filename, 'w')
+
+    with source_file:
+        with destination_file:
             for line_number, line in enumerate(source_file, 1):
                 if line_number == line_number_to_replace:
                     for entry in list_of_replacements:
