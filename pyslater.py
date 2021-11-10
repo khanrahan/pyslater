@@ -19,13 +19,25 @@ def read_unicode_csv_file(filename):
 
     try:
         open_file = open(filename, newline='') #python3
+
+        with open_file:
+            raw_rows = csv.reader(open_file)
+            unicode_rows = [row for row in raw_rows]
+
+            return tuple(unicode_rows)
+
     except TypeError:
         open_file = open(filename, 'rU') #python2.7
 
-    with open_file:
-        raw_rows = csv.reader(open_file)
-        unicode_rows = [row for row in raw_rows]
-        return tuple(unicode_rows)
+        with open_file:
+            raw_rows = csv.reader(open_file)
+            unicode_rows = []
+
+            for utf8_row in raw_rows:
+                unicode_row = [x.decode('utf8') for x in utf8_row]
+                unicode_rows.append(unicode_row)
+
+            return tuple(unicode_rows)
 
 
 def read_ttg_file(filename):
