@@ -5,7 +5,7 @@ Generates .ttg files for Autodesk Flame using data from a CSV file.
 """
 
 from __future__ import print_function # ready for upgrade to python3
-from __future__ import unicode_literals # ready for upgrade to python3
+#from __future__ import unicode_literals # ready for upgrade to python3
 import argparse
 import csv
 import errno
@@ -26,6 +26,7 @@ def read_unicode_csv_file(filename):
         raw_rows = csv.reader(open_file)
         unicode_rows = [row for row in raw_rows]
         return tuple(unicode_rows)
+
 
 def read_ttg_file(filename):
     """Return contents of TTG file."""
