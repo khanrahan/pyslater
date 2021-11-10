@@ -4,8 +4,7 @@
 Generates .ttg files for Autodesk Flame using data from a CSV file.
 """
 
-from __future__ import print_function # ready for upgrade to python3
-#from __future__ import unicode_literals # ready for upgrade to python3
+from __future__ import print_function  # ready for upgrade to python3
 import argparse
 import csv
 import errno
@@ -18,7 +17,7 @@ def read_unicode_csv_file(filename):
     """Returns a tuple of list data from a csv file passed to it."""
 
     try:
-        open_file = open(filename, newline='') #python3
+        open_file = open(filename, newline='')  # python3
 
         with open_file:
             raw_rows = csv.reader(open_file)
@@ -27,7 +26,7 @@ def read_unicode_csv_file(filename):
             return tuple(unicode_rows)
 
     except TypeError:
-        open_file = open(filename, 'rU') #python2.7
+        open_file = open(filename, 'rU')  # python2.7
 
         with open_file:
             raw_rows = csv.reader(open_file)
@@ -55,7 +54,7 @@ def find_ttg_keywords(ttg_file_list):
     """Returns dictionary containing the line number and contents
     for the keywords that are wrapped in percent symbols."""
 
-    return {line:text for line, text in enumerate(ttg_file_list, 1) if
+    return {line: text for line, text in enumerate(ttg_file_list, 1) if
             text.startswith('Text 37') and text.endswith('37')}
 
 
@@ -63,7 +62,8 @@ def convert_from_ttg_text(decimal_string):
     """Returns unicode standard string minus the "Text" at the beginning
    and the % / 37 keyword wrappers"""
 
-    return "".join(chr(int(character)) for character in decimal_string.split()[2:-1])
+    return "".join(chr(int(character)) for character in
+                   decimal_string.split()[2:-1])
 
 
 def convert_to_ttg_text(string):
@@ -113,7 +113,7 @@ def makedirs(filepath):
     try:
         os.makedirs(dirpath)
     except OSError as ex:
-        if ex.errno == errno.ENOENT: #empty filepath
+        if ex.errno == errno.ENOENT:  # empty filepath
             pass
         elif ex.errno == errno.EEXIST:
             pass
@@ -129,7 +129,7 @@ def overwrite_query():
 
     while True:
         try:
-            result = raw_input(prompt) #python 2.7
+            result = raw_input(prompt)  # python 2.7
         except NameError:
             result = input(prompt)
 
@@ -147,9 +147,9 @@ def generate_html_page(html_template, new_html_filename,
     data-clipboard-text=\"master_name_goes_here\">master_name_goes_here</button>"""
 
     try:
-        source_file = open(html_template, newline='') #python3
+        source_file = open(html_template, newline='')  # python3
     except TypeError:
-        source_file = open(html_template, 'rU') #python2.7
+        source_file = open(html_template, 'rU')  # python2.7
 
     destination_file = open(new_html_filename, 'w')
 
@@ -339,8 +339,8 @@ def main():
             continue
 
         # Check against include-rows arguments
-        if not row_number in list_offset(args.include_rows, -1):
-            print(" ".join(["Skipping row", str(row_number +1)]))
+        if row_number not in list_offset(args.include_rows, -1):
+            print(" ".join(["Skipping row", str(row_number + 1)]))
             continue
 
         row_tidy = [tidy_text(item) for item in row]
@@ -400,7 +400,7 @@ def main():
                                  zip(csv_rows[args.header_row - 1], csv_rows[row_number])}
 
         if args.ttg_template is not None and not args.dry_run:
-            makedirs(filepath) #Make output path if necessary
+            makedirs(filepath)  # Make output path if necessary
             write_ttg(filepath, line_replacements, ttg_file_list,
                       unicode_keywords)
 
@@ -417,6 +417,7 @@ def main():
         generate_html_page(template_path, html_destination, 40, ttg_filenames)
 
     print("Done!")
+
 
 if __name__ == "__main__":
     main()
