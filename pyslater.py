@@ -405,7 +405,7 @@ def main():
                       unicode_keywords)
 
     if not args.no_html:
-        template_path = os.path.join(script_path(), "template.html")
+        template_path = os.path.join(script_path(), "templates", "template.html")
         html_destination = os.path.join(common_path(ttg_results),
                                         "copy_paster.html")
         ttg_filenames = [filename_no_ext(i) for i in ttg_results]

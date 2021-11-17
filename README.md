@@ -13,17 +13,17 @@ python pyslater.py -h
 
 Output filenames based on column number
 ```
-python pyslater.py -o "{5}_{6}_{4}.ttg" sample_spreadsheet.csv default_template_16x9.ttg
+python pyslater.py -o "{5}_{6}_{4}.ttg" sample_spreadsheet.csv templates/default_template_16x9.ttg
 ```
 
 Output filenames based on column name
 ```
-python pyslater.py -o "{Spot Code}_{Duration}_{Title}.ttg" sample_spreadsheet.csv default_template_16x9.ttg
+python pyslater.py -o "{Spot Code}_{Duration}_{Title}.ttg" sample_spreadsheet.csv templates/default_template_16x9.ttg
 ```
 
 Include only certain rows in the CSV
 ```
-python pyslater.py --include "*1x1*" -o "{Spot Code}_{Duration}_{Title}.ttg" sample_spreadsheet.csv default_template_1x1.ttg
+python pyslater.py --include "*1x1*" -o "{Spot Code}_{Duration}_{Title}.ttg" sample_spreadsheet.csv templates/default_template_1x1.ttg
 ```
 
 ## Template Setup
