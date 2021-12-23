@@ -343,12 +343,25 @@ def main():
             print(" ".join(["Skipping row", str(row_number + 1)]))
             continue
 
-        row_tidy = [tidy_text(item) for item in row]
-        row_tidy_dict = {keyword: entry for keyword, entry
-                         in zip(csv_rows[0], row_tidy)}
+        # Assemble replacement entries for output path
+        filepath_replacements = {"column": [], "keyword": {}}
 
-        # Check output file path has all necessary enteries
-        filepath = expand_path(args.output).format(* row_tidy, ** row_tidy_dict)
+        filepath_replacements["column"] = [None if item == u'' else
+                                           tidy_text(item) for item in row]
+
+        filepath_replacements["keyword"] = {keyword: tidy_text(entry) for
+                                            keyword, entry in zip(csv_rows[0], row)
+                                            if entry != u''}
+
+        # Check output file path has all necessary entries
+        try:
+            filepath = expand_path(args.output).format(* filepath_replacements["column"],
+                                                       ** filepath_replacements['keyword'])
+
+        except (IndexError, KeyError):
+            print("Skipping row", str(row_number + 1),
+                  "- Could not assemble output path")
+            continue
 
         # Check output filename against exclude argument
         if True in [fnmatch.fnmatch(filepath, arg) for arg in args.exclude]:
