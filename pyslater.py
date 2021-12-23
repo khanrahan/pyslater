@@ -333,6 +333,13 @@ def main():
     ttg_results = []
 
     for row_number, row in enumerate(csv_rows):
+
+        # Check for empty row
+        if all(i == u'' for i in row):
+            print(" ".join(["Skipping row", str(row_number + 1),
+                            "- Empty row"]))
+            continue
+
         # Check against exclude-rows
         if row_number in list_offset(args.exclude_rows, -1):
             print(" ".join(["Skipping row", str(row_number + 1)]))
