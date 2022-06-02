@@ -174,7 +174,7 @@ class FlameLineEditFileBrowse(QtWidgets.QLineEdit):
                                                   background-color: #373737}""")
                                                                                
                                                                                
-    def mouse_press_event(self, event):                                          
+    def mousePressEvent(self, event):                                          
         if event.button() == QtCore.Qt.LeftButton:                             
             self.setStyleSheet('QLineEdit {color: #bbbbbb; background-color: #474e58; font: 14px "Discreet"}'
                                'QLineEdit:disabled {color: #6a6a6a; background-color: #373737}')
@@ -182,7 +182,7 @@ class FlameLineEditFileBrowse(QtWidgets.QLineEdit):
             self.setStyleSheet('QLineEdit {color: #898989; background-color: #373e47; font: 14px "Discreet"}'
                                'QLineEdit:disabled {color: #6a6a6a; background-color: #373737}')
         else:                                                                  
-            super().mouse_press_event(event)                                     
+            super().mousePressEvent(event)                                     
                                                                                
                                                                                
     def file_browse(self):                                                     
