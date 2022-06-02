@@ -14,7 +14,6 @@ CMD_NAME = "pyslater.py"
 DEFAULT_TEMPLATE = "templates/default_template_16x9.ttg"
 GSHEET = "https://docs.google.com/spreadsheets/d/1msDmKt5sigbVe1Pmjsinw2pUqw03hi6Tdo8C0yYehzA/edit?usp=sharing"
 SETUPS_ROOT = "/opt/Autodesk/project"
-PREFERENCES_ROOT = "/opt/Autodesk/user"
 
 
 class FlameButton(QtWidgets.QPushButton):                                      
