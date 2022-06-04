@@ -94,11 +94,13 @@ def filename_no_ext(filepath):
 def tidy_text(text):
     """Returns string that is appropriate for filename usage."""
 
-    # Delete first and last character if a symbol or space.
+    # Chop first and last character if a symbol or space.
     chopped = re.sub(r"^[\W_]+|[\W_]+$", "", text)
-    # Convert symbols & whitespace to underscores.
-    sanitized = re.sub(r"\W+", "_", chopped)
-    # Remove duplicate underscores.
+    # Swap aspect ratios using colons such as 1:1 to 1x1
+    swapped = re.sub(r"([1-9]+):([1-9]+[0-9]*)", r"\1x\2", chopped)
+    # Santize symbols & whitespace to underscores.
+    sanitized = re.sub(r"\W+", "_", swapped)
+    # Tidy up duplicate underscores.
     tidy = re.sub(r"(_)\1+", "_", sanitized)
 
     return tidy
