@@ -462,7 +462,6 @@ class PySlaterWindow(object):
         pyslater cmd line."""
         
         state = self.ttg_path_line_edit.isEnabled()
-        print(self.ttg_path_line_edit.text())
 
         if state is True:
             if self.ttg_path_line_edit.path_new:
@@ -567,6 +566,7 @@ class PySlaterWindow(object):
             self.csv_file_path = self.get_csv_file_path()
             self.filter_include = self.get_filter_include()
             self.filter_exclude = self.get_filter_exclude()
+            self.ttg_file_path = self.get_ttg_file_path()
 
             self.process_start()
 
