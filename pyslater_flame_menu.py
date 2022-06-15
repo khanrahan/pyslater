@@ -467,7 +467,7 @@ class PySlaterWindow(object):
             if self.ttg_path_line_edit.path_new:
                 path = self.ttg_path_line_edit.text() 
             else:
-                path = self.ttg_path_line_edit.path
+                path = self.ttg_path_line_edit.file_path
         else:
             path = ""
 
