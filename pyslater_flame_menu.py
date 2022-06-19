@@ -437,17 +437,6 @@ class PySlaterWindow(object):
         return path
 
 
-    def get_csv_file_path(self):
-        """ """
-
-        try:
-            path = self.csv_path_line_edit.path_new
-        except:
-            path = self.default_path
-
-        return path
-
-
     def get_html_path(self):
         """ """
 
@@ -560,7 +549,7 @@ class PySlaterWindow(object):
         def okay_button():
             """ """
 
-            self.csv_file_path = self.get_csv_file_path()
+            self.csv_file_path = self.csv_path_line_edit.text()
             self.filter_include = self.get_filter_include()
             self.filter_exclude = self.get_filter_exclude()
             self.ttg_file_path = self.get_ttg_file_path()
