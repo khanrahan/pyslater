@@ -463,7 +463,7 @@ class PySlaterWindow(object):
     def get_output_template(self):
         """ """
 
-        pattern = "{Spot Code}_{Duration}_{Title}.ttg"
+        pattern = "<Spot Code>_<Duration>_<Title>.ttg"
         path = os.path.join(self.default_path, pattern)
 
         return path

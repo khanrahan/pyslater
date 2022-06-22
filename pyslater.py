@@ -272,7 +272,7 @@ def create_parser():
                         action="store_true",
                         help="""skip output of HTML""")
     parser.add_argument("-o", "--output",
-                        default=os.path.join(os.getcwd(), "{5}_{6}_{4}"),
+                        default=os.path.join(os.getcwd(), "<5>_<6>_<4>"),
                         help="template for output file names""",
                         metavar="TEMPLATE",
                         type=validate_output_template)
@@ -365,10 +365,17 @@ def main():
                                             keyword, entry in zip(csv_rows[0], row)
                                             if entry != u''}
 
+        # Convert <> to {}
+        # Flame convention for tokens is <>
+        # Python uses {} for string formatting
+        output = args.output
+        output = output.replace("<", "{") 
+        output = output.replace(">", "}") 
+
         # Check output file path has all necessary entries
         try:
-            filepath = expand_path(args.output).format(* filepath_replacements["column"],
-                                                       ** filepath_replacements['keyword'])
+            filepath = expand_path(output).format(* filepath_replacements["column"],
+                                                  ** filepath_replacements['keyword'])
 
         except (IndexError, KeyError):
             print("Skipping row", str(row_number + 1),
