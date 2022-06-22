@@ -52,15 +52,18 @@ def read_ttg_file(filename):
 
 def find_ttg_keywords(ttg_file_list):
     """Returns dictionary containing the line number and contents
-    for the keywords that are wrapped in percent symbols."""
+    for the keywords that are wrapped in greater/less than symbols aka
+    angle brackets.  Angle brackets follow Flame convention for tokens.
+    60 = <
+    62 = >"""
 
     return {line: text for line, text in enumerate(ttg_file_list, 1) if
-            text.startswith('Text 37') and text.endswith('37')}
+            text.startswith('Text 60') and text.endswith('62')}
 
 
 def convert_from_ttg_text(decimal_string):
     """Returns unicode standard string minus the "Text" at the beginning
-   and the % / 37 keyword wrappers"""
+   and the <> keyword wrappers"""
 
     return "".join(chr(int(character)) for character in
                    decimal_string.split()[2:-1])

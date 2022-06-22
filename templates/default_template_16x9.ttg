@@ -1,8 +1,8 @@
 Module Text
 Program Flame
-Version 2018.3.1
+Version 2021.1
 FileVersion 4.19999981
-CreationDate Tue Jul 16 16:50:21 2019
+CreationDate Wed Jun 22 15:08:21 2022
 
 FrameWidth 1920
 FrameHeight 1080
@@ -107,7 +107,7 @@ ColourOut 0 0 100 100
 ColourDrop 0 0 0 100
 ColorUnderline 100 100 100 100
 TextLength 8
-Text 37 65 103 101 110 99 121 37
+Text 60 65 103 101 110 99 121 62
 ParagraphType Inside
 
 #
@@ -129,7 +129,7 @@ LeftIndent 0
 RightMargin 1535
 End
 TextLength 8
-Text 37 67 108 105 101 110 116 37
+Text 60 67 108 105 101 110 116 62
 ParagraphType Inside
 
 #
@@ -151,7 +151,7 @@ LeftIndent 0
 RightMargin 1535
 End
 TextLength 9
-Text 37 80 114 111 100 117 99 116 37
+Text 60 80 114 111 100 117 99 116 62
 ParagraphType Inside
 
 #
@@ -173,7 +173,7 @@ LeftIndent 0
 RightMargin 1535
 End
 TextLength 7
-Text 37 84 105 116 108 101 37
+Text 60 84 105 116 108 101 62
 ParagraphType Inside
 
 #
@@ -195,7 +195,7 @@ LeftIndent 0
 RightMargin 1535
 End
 TextLength 11
-Text 37 83 112 111 116 32 67 111 100 101 37
+Text 60 83 112 111 116 32 67 111 100 101 62
 ParagraphType Inside
 
 #
@@ -217,7 +217,7 @@ LeftIndent 0
 RightMargin 1535
 End
 TextLength 10
-Text 37 68 117 114 97 116 105 111 110 37
+Text 60 68 117 114 97 116 105 111 110 62
 ParagraphType Inside
 
 #
@@ -239,7 +239,7 @@ LeftIndent 0
 RightMargin 1535
 End
 TextLength 7
-Text 37 65 117 100 105 111 37
+Text 60 65 117 100 105 111 62
 ParagraphType Inside
 
 #
@@ -261,7 +261,7 @@ LeftIndent 0
 RightMargin 1535
 End
 TextLength 6
-Text 37 68 97 116 101 37
+Text 60 68 97 116 101 62
 ParagraphType Inside
 
 #
@@ -283,7 +283,7 @@ LeftIndent 0
 RightMargin 1535
 End
 TextLength 11
-Text 37 67 111 112 121 114 105 103 104 116 37
+Text 60 67 111 112 121 114 105 103 104 116 62
 ParagraphType Inside
 
 #
@@ -305,7 +305,7 @@ LeftIndent 0
 RightMargin 1535
 End
 TextLength 8
-Text 37 65 114 116 105 115 116 37
+Text 60 65 114 116 105 115 116 62
 ParagraphType Inside
 
 #
@@ -327,7 +327,7 @@ LeftIndent 0
 RightMargin 1535
 End
 TextLength 6
-Text 37 73 110 102 111 37
+Text 60 73 110 102 111 62
 ParagraphType Last
 
 #
