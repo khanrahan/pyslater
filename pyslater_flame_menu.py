@@ -12,6 +12,7 @@ from functools import partial
 
 CMD_NAME = "pyslater.py"
 DEFAULT_TEMPLATE = "templates/default_template_16x9.ttg"
+DEFAULT_OUTPUT_TTG = "<Spot Code>_<Duration>_<Title>.ttg"
 GSHEET = "https://docs.google.com/spreadsheets/d/1msDmKt5sigbVe1Pmjsinw2pUqw03hi6Tdo8C0yYehzA/edit?usp=sharing"
 SETUPS_ROOT = "/opt/Autodesk/project"
 
@@ -463,8 +464,7 @@ class PySlaterWindow(object):
     def get_output_template(self):
         """ """
 
-        pattern = "<Spot Code>_<Duration>_<Title>.ttg"
-        path = os.path.join(self.default_path, pattern)
+        path = os.path.join(self.default_path, DEFAULT_OUTPUT_TTG)
 
         return path
 
