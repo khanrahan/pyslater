@@ -554,6 +554,8 @@ class PySlaterWindow(object):
             self.filter_exclude = self.get_filter_exclude()
             self.ttg_file_path = self.get_ttg_file_path()
 
+            self.text.clear()  # Clear the previous shell output
+
             self.process_start()
 
 
