@@ -379,9 +379,7 @@ class PySlaterWindow(object):
     def filter_exclude_btn_toggle(self):
         """ """
 
-        state = self.filter_exclude_line_edit.isEnabled()
-
-        if state is False:
+        if not self.filter_exclude_line_edit.isEnabled():
             self.filter_exclude_line_edit.setEnabled(True)
 
             self.filter_include_btn.setChecked(False)
@@ -389,13 +387,13 @@ class PySlaterWindow(object):
         else:
             self.filter_exclude_line_edit.setEnabled(False)
 
+        self.get_filter_exclude()
+
 
     def filter_include_btn_toggle(self):
         """ """
 
-        state = self.filter_include_line_edit.isEnabled()
-
-        if state is False:
+        if not self.filter_include_line_edit.isEnabled():
             self.filter_include_line_edit.setEnabled(True)
 
             self.filter_exclude_btn.setChecked(False)
@@ -403,26 +401,26 @@ class PySlaterWindow(object):
         else:
             self.filter_include_line_edit.setEnabled(False)
 
+        self.get_filter_include()
+
 
     def ttg_btn_toggle(self):
         """ """
         
-        state = self.ttg_path_line_edit.isEnabled()
-
-        if state is True:
+        if self.ttg_path_line_edit.isEnabled():
             self.ttg_path_line_edit.setEnabled(False)
             self.ttg_file_path = ""
         else:
             self.ttg_path_line_edit.setEnabled(True)
             self.ttg_file_path = self.ttg_path_line_edit.text()
 
+        self.get_ttg_file_path()
+
 
     def html_btn_toggle(self):
         """ """
         
-        state = self.html_path_line_edit.isEnabled()
-
-        if state is True:
+        if self.html_path_line_edit.isEnabled():
             self.html_path_line_edit.setEnabled(False)
             self.html = "--no-html"
         else:
@@ -430,43 +428,43 @@ class PySlaterWindow(object):
             self.html = ""
 
 
+    def get_csv_path(self):
+        """ """
+
+        self.csv_file_path = self.csv_path_line_edit.text()
+
+
     def get_filter_exclude(self):
         """ """
         
-        state = self.filter_exclude_line_edit.isEnabled()
-
-        if state is True:
+        if self.filter_exclude_line_edit.isEnabled():
             cmd_line_opt = "--exclude"
             filter_args = self.filter_exclude_line_edit.text()
             opt_and_args = [cmd_line_opt, filter_args]
 
-            return opt_and_args
+            self.filter_exclude = opt_and_args
         else:
-            return []
+            self.filter_exclude = []
 
 
     def get_filter_include(self):
         """ """ 
         
-        state = self.filter_include_line_edit.isEnabled()
-
-        if state is True:
+        if self.filter_include_line_edit.isEnabled():
             cmd_line_opt = "--include"
             filter_args = self.filter_include_line_edit.text()
             opt_and_args = [cmd_line_opt, filter_args]
 
-            return opt_and_args
+            self.filter_include = opt_and_args
         else:
-            return []
+            self.filter_include = []
 
 
     def get_cmd_path(self, cmd):
 
         import os
 
-        path = os.path.join(self.cmd_dir, cmd)
-
-        return path
+        return os.path.join(self.cmd_dir, cmd)
 
 
     def get_html_path(self):
@@ -482,14 +480,11 @@ class PySlaterWindow(object):
         """Returns path to the TTG if enabled in GUI to be used an arg for the
         pyslater cmd line."""
         
-        state = self.ttg_path_line_edit.isEnabled()
 
-        if state is True:
-            path = self.ttg_path_line_edit.text()
+        if self.ttg_path_line_edit.isEnabled():
+            self.ttg_file_path = self.ttg_path_line_edit.text()
         else:
-            path = ""
-
-        return path
+            self.ttg_file_path = ""
 
 
     def get_output_template(self):
@@ -591,13 +586,7 @@ class PySlaterWindow(object):
         def okay_button():
             """ """
 
-            self.csv_file_path = self.csv_path_line_edit.text()
-            self.filter_include = self.get_filter_include()
-            self.filter_exclude = self.get_filter_exclude()
-            self.ttg_file_path = self.get_ttg_file_path()
-
             self.text.clear()  # Clear the previous shell output
-
             self.process_start()
 
 
@@ -663,15 +652,19 @@ class PySlaterWindow(object):
 
         self.csv_path_line_edit = FlameLineEditFileBrowse(
                 self.csv_file_path, "*.csv", self.window)   
+        self.csv_path_line_edit.textChanged.connect(self.get_csv_path)
 
         self.ttg_path_line_edit = FlameLineEditFileBrowse(
                 self.ttg_file_path, "*.ttg", self.window)
+        self.ttg_path_line_edit.textChanged.connect(self.get_ttg_file_path)
 
         self.filter_include_line_edit = FlameLineEdit("", "normal", self.window)
         self.filter_include_line_edit.setEnabled(False)  # initial state
+        self.filter_include_line_edit.textChanged.connect(self.get_filter_include)
 
         self.filter_exclude_line_edit = FlameLineEdit("", "normal", self.window)
         self.filter_exclude_line_edit.setEnabled(False)  # initial state
+        self.filter_exclude_line_edit.textChanged.connect(self.get_filter_exclude)
 
         self.output_template = FlameLineEdit(
                 self.output_template_path, "read_only", self.window)
