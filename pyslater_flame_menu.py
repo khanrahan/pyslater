@@ -296,8 +296,18 @@ class PySlaterWindow(object):
         self.html_path = self.get_html_path()
 
         self.process = None
+        self.window_size = {"x": 1000, "y": 130} 
        
         self.main_window()
+        self.update_html_line_edit()
+
+
+    @staticmethod                                                                       
+    def copy_to_clipboard(text):                                                        
+        """Self explanitory.  Only takes a string."""                                   
+                                                                                        
+        qt_app_instance = QtWidgets.QApplication.instance()                             
+        qt_app_instance.clipboard().setText(text)
 
 
     @staticmethod
@@ -343,6 +353,27 @@ class PySlaterWindow(object):
         real_path = os.path.realpath(path)
 
         return real_path
+
+
+    def copy_csv_to_clipboard(self):
+        """ """
+
+        self.copy_to_clipboard(self.csv_path_line_edit.text())
+        self.message("CSV copied to clipboard.")
+
+
+    def copy_html_to_clipboard(self):
+        """ """
+
+        self.copy_to_clipboard(self.html_path_line_edit.text())
+        self.message("HTML copied to clipboard.")
+
+
+    def copy_url_to_clipboard(self):
+        """ """
+
+        self.copy_to_clipboard(self.url_line_edit.text())
+        self.message("URL copied to clipboard.")
 
 
     def filter_exclude_btn_toggle(self):
@@ -475,6 +506,15 @@ class PySlaterWindow(object):
         self.text.appendPlainText(string)
 
 
+    def update_html_line_edit(self):
+        """ """
+
+        if os.path.isfile(self.html_path):
+            self.html_path_line_edit.setText(self.html_path)
+        else:
+            self.html_path_line_edit.setText("")
+
+        
     def process_start(self):
         """ """
 
@@ -514,6 +554,8 @@ class PySlaterWindow(object):
 
         self.message("Process all done!")
         self.process = None
+
+        self.update_html_line_edit()  # update HTML line if HTML file now exists
 
 
     def handle_stderr(self):
@@ -561,7 +603,7 @@ class PySlaterWindow(object):
 
         self.window = QtWidgets.QWidget()                                      
 
-        self.window.setMinimumSize(900, 130)                                   
+        self.window.setMinimumSize(self.window_size["x"], self.window_size["y"])                                   
         self.window.setStyleSheet('background-color: #272727')                 
         self.window.setWindowTitle("Lets Generate some Slate!")                    
                                                                                
@@ -570,7 +612,8 @@ class PySlaterWindow(object):
                                                                                
         # Center Window                                                        
         resolution = QtWidgets.QDesktopWidget().screenGeometry()               
-                                                                               
+         
+        print(self.window.frameSize().height()) 
         self.window.move(
                 (resolution.width() / 2) - (self.window.frameSize().width() / 2),
                 (resolution.height() / 2) - (self.window.frameSize().height() / 2))
@@ -586,13 +629,19 @@ class PySlaterWindow(object):
 
         self.output_template_label = FlameLabel(
                 "Output Path", 'normal', self.window)
-                                                                               
+
         # Buttons                                                              
         self.ok_btn = FlameButton('Ok', okay_button, self.window)              
         self.ok_btn.setStyleSheet('background: #732020')                       
                                                                                
         self.cancel_btn = FlameButton(
                 "Cancel", self.window.close, self.window)
+
+        self.url_copy_btn = FlameButton(
+                "Copy", self.copy_url_to_clipboard, self.window)
+
+        self.csv_copy_btn = FlameButton(
+                "Copy", self.copy_csv_to_clipboard, self.window)
 
         self.filter_exclude_btn = FlamePushButton(
                 " Exclude", self.window, False, self.filter_exclude_btn_toggle)
@@ -606,6 +655,9 @@ class PySlaterWindow(object):
         self.html_btn = FlamePushButton(
                 " HTML", self.window, True, self.html_btn_toggle)
 
+        self.html_copy_btn = FlameButton(
+                "Copy", self.copy_html_to_clipboard, self.window)
+         
         # Line Edits                                                           
         self.url_line_edit = FlameLineEdit(GSHEET, "read_only", self.window)
 
@@ -624,8 +676,7 @@ class PySlaterWindow(object):
         self.output_template = FlameLineEdit(
                 self.output_template_path, "read_only", self.window)
 
-        self.html_path_line_edit = FlameLineEdit(
-                self.html_path, "read_only", self.window)
+        self.html_path_line_edit = FlameLineEdit("", "read_only", self.window)
 
         # Text Field
         self.text = QtWidgets.QPlainTextEdit() 
@@ -636,11 +687,13 @@ class PySlaterWindow(object):
         self.grid1 = QtWidgets.QGridLayout()                                    
         self.grid1.setVerticalSpacing(10)                                       
         self.grid1.setHorizontalSpacing(10)                                     
-        self.grid1.addWidget(self.input_label, 0, 0, 1, 2)
+        self.grid1.addWidget(self.input_label, 0, 0, 1, 3)
         self.grid1.addWidget(self.url_label, 1, 0)
         self.grid1.addWidget(self.url_line_edit, 1, 1)
+        self.grid1.addWidget(self.url_copy_btn, 1, 2)
         self.grid1.addWidget(self.csv_label, 2, 0)                            
         self.grid1.addWidget(self.csv_path_line_edit, 2, 1)                             
+        self.grid1.addWidget(self.csv_copy_btn, 2, 2)
 
         # Layout - Filtering
         self.grid2 = QtWidgets.QGridLayout()
@@ -656,13 +709,14 @@ class PySlaterWindow(object):
         self.grid3 = QtWidgets.QGridLayout()
         self.grid3.setVerticalSpacing(10)                                       
         self.grid3.setHorizontalSpacing(10)
-        self.grid3.addWidget(self.output_label, 0, 0, 1, 2)
+        self.grid3.addWidget(self.output_label, 0, 0, 1, 3)
         self.grid3.addWidget(self.output_template_label, 1, 0)
         self.grid3.addWidget(self.output_template, 1, 1)
         self.grid3.addWidget(self.ttg_template_btn, 2, 0)
         self.grid3.addWidget(self.ttg_path_line_edit, 2, 1)
         self.grid3.addWidget(self.html_btn, 3, 0)
         self.grid3.addWidget(self.html_path_line_edit, 3, 1)
+        self.grid3.addWidget(self.html_copy_btn, 3, 2)
                                                                                
         # Layout
         self.hbox01 = QtWidgets.QHBoxLayout()                                  
@@ -672,8 +726,6 @@ class PySlaterWindow(object):
                                                                                
         self.vbox = QtWidgets.QVBoxLayout()                                    
         self.vbox.setMargin(20)                                                
-        #self.input_group_box = FlameGroupBox("Input", self.window)
-        #self.input_group_box.setLayout(self.grid1)
         self.vbox.addLayout(self.grid1)                                         
         self.vbox.addSpacing(40)
         self.vbox.addLayout(self.grid2)                                         
