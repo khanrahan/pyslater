@@ -4,10 +4,10 @@ https://github.com/khanrahan/pyslater
 
 
 from __future__ import print_function
+from functools import partial
 from PySide2 import QtCore
 from PySide2 import QtWidgets
 import os
-from functools import partial
 
 
 CMD_NAME = "pyslater.py"
@@ -296,7 +296,7 @@ class PySlaterWindow(object):
         self.html_path = self.get_html_path()
 
         self.process = None
-        self.window_size = {"x": 1000, "y": 130} 
+        self.window_size = {"x": 1000, "y": 756} 
        
         self.main_window()
         self.update_html_line_edit()
@@ -313,8 +313,6 @@ class PySlaterWindow(object):
     @staticmethod
     def get_cmd_dir():
         """ """
-
-        import os
 
         dirpath = os.path.realpath(os.path.dirname(__file__))
 
@@ -336,8 +334,6 @@ class PySlaterWindow(object):
     def path_join(paths):
         """Takes a list of paths."""
 
-        import os
-
         full_path = os.path.join(*paths)
 
         return full_path
@@ -346,8 +342,6 @@ class PySlaterWindow(object):
     @staticmethod
     def realpath_join(paths):
         """ """
-
-        import os
 
         path = os.path.join(*paths)
         real_path = os.path.realpath(path)
@@ -461,8 +455,7 @@ class PySlaterWindow(object):
 
 
     def get_cmd_path(self, cmd):
-
-        import os
+        """ """
 
         return os.path.join(self.cmd_dir, cmd)
 
@@ -599,14 +592,6 @@ class PySlaterWindow(object):
         # FlameLineEdit class needs this                                       
         self.window.setFocusPolicy(QtCore.Qt.StrongFocus)                      
                                                                                
-        # Center Window                                                        
-        resolution = QtWidgets.QDesktopWidget().screenGeometry()               
-         
-        print(self.window.frameSize().height()) 
-        self.window.move(
-                (resolution.width() / 2) - (self.window.frameSize().width() / 2),
-                (resolution.height() / 2) - (self.window.frameSize().height() / 2))
-                                                                               
         # Labels                                                               
         self.input_label = FlameLabel('Input', 'background', self.window)
         self.url_label = FlameLabel('URL', 'normal', self.window)
@@ -730,8 +715,14 @@ class PySlaterWindow(object):
         self.vbox.addWidget(self.text)
                                                                                
         self.window.setLayout(self.vbox)                                       
-        self.window.show()                                                     
                                                                                
+        # Center Window                                                        
+        resolution = QtWidgets.QDesktopWidget().screenGeometry()               
+         
+        self.window.move(resolution.center().x() - self.window_size["x"] / 2,
+                         resolution.center().y() - self.window_size["y"] / 2)
+
+        self.window.show()                                                     
         return self.window 
 
 
