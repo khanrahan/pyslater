@@ -22,7 +22,7 @@ URL:
 
 from __future__ import print_function
 
-__version_info__ = (0, 0, 1)
+__version_info__ = (0, 0, 2)
 __version__ = ".".join([str(num) for num in __version_info__])
 
 import argparse
@@ -338,28 +338,46 @@ class PySlater(object):
 
     def write_ttg(self):
         """
-        Writes out a ttg.  Relies on the below class parameters:
+        Writes out a TTG file line by line and replaces the tokens with data as it goes.
 
-        self.filepath = full destination path and filename
-        self.ttg_replacements = dictionary of replacements and their destination line
-            numbers
-        self.ttg_file_list = the template ttg stored a tuple of lines
-        self.ttg_template_keywords = dictionary of the keywords in the template and their
-            line number
+        TTG File Format lists the length of the line before listing the contents of the
+        line.  Example below:
+
+            TextLenth 6
+            Text 22 17 27 33 11 15
+
+        Args:
+            self.filepath: full destination path and filename
+            self.ttg_replacements: dictionary of replacements and their destination line
+                numbers
+            self.ttg_file_list: the template ttg stored a tuple of lines
+            self.template_ttg_keywords:dictionary of the keywords in the template and their
+                line number.  ex. {12:"Title"}
         """
 
         try:
             with open(self.filepath, "w") as ttg:
+                # Run through TTG template line by line
                 for line_number, text in enumerate(self.template_ttg_rows, 1):
+                    # If the following line includes a token
                     if line_number + 1 in list(self.template_ttg_keywords.keys()):
-                        new_text = self.ttg_replacements[self.template_ttg_keywords[line_number
-                                                                                    + 1]]
-                        ttg.write("TextLength " +
-                                  str(len(self.convert_to_ttg_text(new_text).split())) +
-                                  "\n")
+                        # Take the following line number, find the keyword associated
+                        # with that line, run that keyword through the dictionary of
+                        # replacements.
+                        try:
+                            new_text = self.ttg_replacements[
+                                self.template_ttg_keywords[line_number + 1]]
+                        # If the token does not exist in the CSV
+                        except KeyError:
+                            new_text = ""
+                        # TTG format precedes the actual text with a TextLength detail
+                        new_ttg_text = self.convert_to_ttg_text(new_text)
+                        # Write out the line before the token and the following line
+                        # that actually contains the token
+                        ttg.write("TextLength " + str(len(new_ttg_text.split())) + "\n")
+                        ttg.write("Text " + new_ttg_text + "\n")
                     elif line_number in list(self.template_ttg_keywords.keys()):
-                        new_text = self.ttg_replacements[self.template_ttg_keywords[line_number]]
-                        ttg.write("Text " + self.convert_to_ttg_text(new_text) + "\n")
+                        continue
                     else:
                         ttg.write(text + "\n")
         except IOError:
