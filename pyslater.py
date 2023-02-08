@@ -22,7 +22,7 @@ URL:
 
 from __future__ import print_function
 
-__version_info__ = (0, 0, 2)
+__version_info__ = (0, 1, 0)
 __version__ = ".".join([str(num) for num in __version_info__])
 
 import argparse
@@ -100,6 +100,8 @@ class PySlater(object):
         # Args for each Slate
         self.filepath = ""
         self.reply = ""
+        self.row = []
+        self.row_number = 0
         self.ttg_replacements = {}
 
         # Remaining Args
@@ -170,6 +172,7 @@ class PySlater(object):
 
         return {line: text for line, text in enumerate(ttg_file_list, 1) if
                 text.startswith('Text 60') and text.endswith('62')}
+
 
     @staticmethod
     def write_html_page(html_template, new_html_filename,
@@ -336,6 +339,15 @@ class PySlater(object):
 
         return ttg_keywords_unicode
 
+    def message_row(self, *args):
+        """Prints out message and pads the row number."""
+
+        row_num = ["Row", str(self.row_number + 1).zfill(2)]
+        divider = ["-"]
+        message_elements = row_num + divider + [item for item in args]
+
+        print(" ".join([i for i in message_elements]))
+
     def write_ttg(self):
         """
         Writes out a TTG file line by line and replaces the tokens with data as it goes.
@@ -402,39 +414,39 @@ class PySlater(object):
         # Print info for CSV file
         print("Found %s rows in %s" % (len(self.csv_rows), self.csv_file))
 
-        for row_number, row in enumerate(self.csv_rows):
+        for self.row_number, self.row in enumerate(self.csv_rows):
 
             # Check for empty row
-            if all(i == u'' for i in row):
-                print(" ".join(["Skipping row", str(row_number + 1),
-                                "- Empty row"]))
+            if all(i == u'' for i in self.row):
+                self.message_row("Skipping - Empty row")
                 continue
 
             # Skip the header row
-            if (self.row_header - 1) == row_number:
-                print(" ".join(["Header Row - Skipping row", str(row_number + 1)]))
+            if (self.row_header - 1) == self.row_number:
+                self.message_row("Skipping - Header row")
                 continue
 
             # Check for excluded rows
             if self.row_exclude:
-                if row_number in self.list_offset(self.row_exclude, -1):
-                    print(" ".join(["Matches Exclude - Skipping row", str(row_number + 1)]))
+                if self.row_number in self.list_offset(self.row_exclude, -1):
+                    self.message_row("Skipping - Row excluded")
                     continue
 
             # Check for included rows
             if self.row_include:
-                if row_number not in self.list_offset(self.row_include, -1):
-                    print(" ".join(["Not Included - Skipping row", str(row_number + 1)]))
+                if self.row_number not in self.list_offset(self.row_include, -1):
+                    self.message_row("Skipping - Row not included")
                     continue
 
             # Assemble replacement entries for output path
             filepath_replacements = {"column": [], "keyword": {}}
 
             filepath_replacements["column"] = [None if item == u'' else
-                                               self.tidy_text(item) for item in row]
+                                               self.tidy_text(item) for item in self.row]
 
             filepath_replacements["keyword"] = {keyword: self.tidy_text(entry) for
-                                                keyword, entry in zip(self.csv_rows[0], row)
+                                                keyword, entry in zip(self.csv_rows[0],
+                                                                      self.row)
                                                 if entry != u''}
 
             # Check output file path has all necessary entries
@@ -443,35 +455,36 @@ class PySlater(object):
                                                              ** filepath_replacements['keyword'])
 
             except (IndexError, KeyError):
-                print("Skipping row", str(row_number + 1),
-                      "- Could not assemble output path")
+                self.message_row("Skipping - Could not assemble output path.")
                 continue
 
             # Check output filename against filter exclude
             if self.filter_exclude:
                 if True in [fnmatch.fnmatch(self.filepath, arg) for arg in self.filter_exclude]:
-                    print(" ".join(["Skipping", self.filename_no_ext(self.filepath)]))
+                    self.message_row(self.filepath, "matches exclude filter")
+                    self.message_row("Skipping", self.filepath)
                     continue
 
             # Check output filename against include argument
             if self.filter_include:
                 if not any([fnmatch.fnmatch(self.filepath, arg) for arg in self.filter_include]):
-                    print(" ".join(["Skipping", self.filename_no_ext(self.filepath)]))
+                    self.message_row(self.filepath, "does not match include filter")
+                    self.message_row("Skipping", self.filepath)
                     continue
 
-            print(" ".join(["Proceeding with", self.filename_no_ext(self.filepath)]))
+            self.message_row("Proceeding with", self.filename_no_ext(self.filepath))
 
             # Check for overwrite
             if self.template_ttg:
                 exists = os.path.isfile(self.filepath)
 
                 if exists:
-                    print("%s already exists!" % self.filepath)
+                    self.message_row("Warning!", self.filepath, "already exists!")
 
                 if exists and self.force_overwrite:
                     pass
                 if exists and self.skip_existing:
-                    print("Skipping %s" % self.filepath)
+                    self.message_row("Skipping", self.filepath)
                     continue
                 if exists and not self.force_overwrite and not self.skip_existing:
                     self.reply = self.overwrite_query()
@@ -480,7 +493,7 @@ class PySlater(object):
                     if self.reply and self.reply == "y":
                         pass
                     if self.reply and self.reply == "n":
-                        print("Skipping %s" % self.filepath)
+                        self.message_row("Skipping", self.filepath)
                         continue
                     if self.reply and self.reply == "Y":
                         self.force_overwrite = True
@@ -490,13 +503,13 @@ class PySlater(object):
 
             # Start writing out TTGs
             if self.template_ttg:
-                print("".join(["Writing out ", self.filepath]))
+                self.message_row("Writing out", self.filepath)
 
                 # Assemble dict using header row for keys and row entries
                 # for the replacements
                 self.ttg_replacements = {keyword: entry for keyword, entry in
                                          zip(self.csv_rows[self.row_header - 1],
-                                             self.csv_rows[row_number])}
+                                             self.csv_rows[self.row_number])}
 
             if self.template_ttg and not self.dry_run:
                 self.makedirs(self.filepath)  # Make output path if necessary
@@ -522,7 +535,7 @@ class PySlater(object):
 def create_parser():
     """Assemble parser of command line args."""
 
-    parser = argparse.ArgumentParser(description="""generates TTG files using a
+    parser = argparse.ArgumentParser(description="""Generates TTG files using a
         template TTG file and CSV full of data to fill in fields.""",
                                      formatter_class=lambda prog:
                                      argparse.HelpFormatter(prog, max_help_position=40))
