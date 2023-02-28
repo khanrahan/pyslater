@@ -28,8 +28,8 @@ from PySide2 import QtCore
 from PySide2 import QtWidgets
 import os
 
-TITLE = "pySlater Menu"
-VERSION_INFO = (0, 1, 1)
+TITLE = "pySlater Flame Menu"
+VERSION_INFO = (0, 1, 2)
 VERSION = ".".join([str(num) for num in VERSION_INFO])
 VERSION_TITLE = "{} v{}".format(TITLE, VERSION)
 
@@ -458,14 +458,14 @@ class PySlaterWindow(object):
         """ """
 
         self.copy_to_clipboard(self.csv_path_line_edit.text())
-        self.message_window("CSV copied to clipboard.")
+        self.message_window("CSV file path copied to clipboard.")
 
 
     def copy_html_to_clipboard(self):
         """ """
 
         self.copy_to_clipboard(self.html_path_line_edit.text())
-        self.message_window("HTML copied to clipboard.")
+        self.message_window("HTML file path copied to clipboard.")
 
 
     def copy_url_to_clipboard(self):
@@ -612,7 +612,6 @@ class PySlaterWindow(object):
         """ """
 
         if self.process is None:  # No process already running.
-            self.message_window("Process starting up...")
             self.process = QtCore.QProcess()
 
             self.process.readyReadStandardOutput.connect(self.handle_stdout)
@@ -637,7 +636,7 @@ class PySlaterWindow(object):
 
             # Debug command to be run
             full_cmd = cmd + " " + " ".join(opts)
-            print(full_cmd)
+            self.message_window(full_cmd)
 
             self.process.start(cmd, opts)
 
@@ -645,7 +644,7 @@ class PySlaterWindow(object):
     def process_finished(self):
         """ """
 
-        self.message_window("Process all done!")
+        self.message_window("Process Finished!")
         self.process = None
 
         self.update_html_line_edit()  # update HTML line if HTML file now exists
@@ -671,11 +670,11 @@ class PySlaterWindow(object):
         """ """
 
         states = {
-            QtCore.QProcess.NotRunning: "Not running",
+            QtCore.QProcess.NotRunning: "Not Running",
             QtCore.QProcess.Starting: "Starting",
             QtCore.QProcess.Running: "Running"}
         state_name = states[state]
-        self.message_window("State changed: {}".format(state_name))
+        self.message_window("Process {}...".format(state_name))
 
 
     def main_window(self):
